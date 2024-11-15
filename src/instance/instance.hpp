@@ -134,6 +134,16 @@ class Instance {
    */
   Instance();
 
+  /**
+   * @brief Assignment operator for the Instance class.
+   *
+   * This operator assigns the values from the given instance to the current
+   * instance. It performs a deep copy of the member variables to ensure that
+   * the current instance has the same values as the given instance.
+   *
+   * @param instance The instance to be copied.
+   * @return A reference to the current instance after assignment.
+   */
   Instance& operator=(const Instance& instance);
 
   /**
