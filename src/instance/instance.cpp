@@ -7,6 +7,20 @@
 
 namespace mopop {
 
+/**
+ * @brief Loads the instance data from the given files.
+ *
+ * This function reads the expected returns and covariance matrix from the
+ * specified files and populates the corresponding member variables.
+ *
+ * @param expected_returns_filename The path to the file containing the expected
+ * returns.
+ * @param covariance_filename The path to the file containing the covariance
+ * matrix.
+ *
+ * @throws std::runtime_error If either the expected returns file or the
+ * covariance file cannot be opened.
+ */
 void Instance::load_instance(const std::string &expected_returns_filename,
                              const std::string &covariance_filename) {
   std::ifstream expected_returns_file(expected_returns_filename),
@@ -62,13 +76,16 @@ void Instance::load_instance(const std::string &expected_returns_filename,
   this->senses = {NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE};
 }
 
-Instance::Instance()
-    : num_assets(0),
-      tickers(),
-      expected_returns(),
-      covariance_matrix(),
-      senses() {}
-
+/**
+ * @brief Constructs an Instance object with the given tickers, expected
+ * returns, and covariance matrix.
+ *
+ * @param tickers A vector of strings representing the asset tickers.
+ * @param expected_returns A vector of doubles representing the expected returns
+ * for each asset.
+ * @param covariance_matrix A 2D vector of doubles representing the covariance
+ * matrix of the assets.
+ */
 Instance::Instance(const std::vector<std::string> &tickers,
                    const std::vector<double> &expected_returns,
                    const std::vector<std::vector<double>> &covariance_matrix)
@@ -78,6 +95,17 @@ Instance::Instance(const std::vector<std::string> &tickers,
       covariance_matrix(covariance_matrix),
       senses({NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE}) {}
 
+/**
+ * @brief Constructs an Instance object and initializes its data members.
+ *
+ * This constructor initializes the number of assets, tickers, expected returns,
+ * covariance matrix, and senses. It then loads the instance data from the
+ * specified files.
+ *
+ * @param returns_filename The filename containing the expected returns data.
+ * @param covariance_filename The filename containing the covariance matrix
+ * data.
+ */
 Instance::Instance(const std::string &returns_filename,
                    const std::string &covariance_filename)
     : num_assets(0),
@@ -88,8 +116,44 @@ Instance::Instance(const std::string &returns_filename,
   this->load_instance(returns_filename, covariance_filename);
 }
 
+/**
+ * @brief Copy constructor for the Instance class.
+ *
+ * This constructor creates a new Instance object by copying the contents
+ * of an existing Instance object.
+ *
+ * @param instance The Instance object to be copied.
+ */
 Instance::Instance(const Instance &instance) = default;
 
+/**
+ * @brief Default constructor for the Instance class.
+ *
+ * This constructor initializes an Instance object with default values:
+ * - num_assets is set to 0.
+ * - tickers is initialized as an empty container.
+ * - expected_returns is initialized as an empty container.
+ * - covariance_matrix is initialized as an empty container.
+ * - senses is initialized as an empty container.
+ */
+Instance::Instance()
+    : num_assets(0),
+      tickers(),
+      expected_returns(),
+      covariance_matrix(),
+      senses() {}
+
+/**
+ * @brief Overloads the << operator to print the details of an Instance object.
+ *
+ * This function outputs the number of assets, tickers with their expected
+ * returns, and the covariance matrix of the given Instance object to the
+ * provided output stream.
+ *
+ * @param os The output stream to which the Instance details will be written.
+ * @param instance The Instance object whose details are to be printed.
+ * @return A reference to the output stream.
+ */
 std::ostream &operator<<(std::ostream &os, const Instance &instance) {
   os << "Number of assets: " << instance.num_assets << std::endl;
 
@@ -115,4 +179,4 @@ std::ostream &operator<<(std::ostream &os, const Instance &instance) {
   return os;
 }
 
-}
+}  // namespace mopop
