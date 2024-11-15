@@ -5,12 +5,12 @@
 #include <istream>
 #include <ostream>
 #include <vector>
+
 #include "nsbrkga.hpp"
 
 namespace mopop {
 class Instance {
-    public:
-
+   public:
     unsigned num_assets;
 
     std::vector<std::string> tickers;
@@ -21,23 +21,20 @@ class Instance {
 
     std::vector<NSBRKGA::Sense> senses;
 
-    private:
+   private:
+    void load_instance(const std::string& expected_returns_filename, const std::string& covariance_filename);
 
-    void load_instance(const std::string & expected_returns_filename, const std::string & covariance_filename);
+   public:
+    Instance(const std::vector<std::string>& tickers, const std::vector<double>& expected_returns,
+             const std::vector<std::vector<double>>& covariance_matrix);
 
-    public:
+    Instance(const std::string& expected_returns_filename, const std::string& covariance_file);
 
-    Instance(const std::vector<std::string> & tickers,
-             const std::vector<double> & expected_returns,
-             const std::vector<std::vector<double>> & covariance_matrix);
-
-    Instance(const std::string & expected_returns_filename, const std::string & covariance_file);
-
-    Instance(const Instance & instance);
+    Instance(const Instance& instance);
 
     Instance();
 
-    friend std::ostream & operator <<(std::ostream & os, const Instance & instance);
+    friend std::ostream& operator<<(std::ostream& os, const Instance& instance);
 };
 
-}
+}  // namespace mopop

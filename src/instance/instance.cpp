@@ -1,12 +1,13 @@
 #include "instance.hpp"
+
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <iostream>
 
 namespace mopop {
 
-void Instance::load_instance(const std::string & expected_returns_filename, const std::string & covariance_filename) {
+void Instance::load_instance(const std::string &expected_returns_filename, const std::string &covariance_filename) {
     std::ifstream expected_returns_file(expected_returns_filename), covariance_file(covariance_filename);
     std::string line;
 
@@ -60,15 +61,22 @@ void Instance::load_instance(const std::string & expected_returns_filename, cons
 
 Instance::Instance() : num_assets(0), tickers(), expected_returns(), covariance_matrix(), senses() {}
 
-Instance::Instance(const std::vector<std::string> & tickers,const std::vector<double> & expected_returns,const std::vector<std::vector<double>> & covariance_matrix) : num_assets(covariance_matrix.size()), tickers(tickers), expected_returns(expected_returns), covariance_matrix(covariance_matrix), senses({NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE}) {}
+Instance::Instance(const std::vector<std::string> &tickers, const std::vector<double> &expected_returns,
+                   const std::vector<std::vector<double>> &covariance_matrix)
+    : num_assets(covariance_matrix.size()),
+      tickers(tickers),
+      expected_returns(expected_returns),
+      covariance_matrix(covariance_matrix),
+      senses({NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE}) {}
 
-Instance::Instance(const std::string & returns_filename, const std::string & covariance_filename) : num_assets(0), tickers(), expected_returns(), covariance_matrix(), senses() {
+Instance::Instance(const std::string &returns_filename, const std::string &covariance_filename)
+    : num_assets(0), tickers(), expected_returns(), covariance_matrix(), senses() {
     this->load_instance(returns_filename, covariance_filename);
 }
 
-Instance::Instance(const Instance & instance) = default;
+Instance::Instance(const Instance &instance) = default;
 
-std::ostream & operator <<(std::ostream & os, const Instance & instance) {
+std::ostream &operator<<(std::ostream &os, const Instance &instance) {
     os << "Number of assets: " << instance.num_assets << std::endl;
 
     os << "Tickers and Expected returns: " << std::endl;
@@ -81,7 +89,7 @@ std::ostream & operator <<(std::ostream & os, const Instance & instance) {
 
     os << "Covariance matrix:" << std::endl;
 
-    for (const auto & row : instance.covariance_matrix) {
+    for (const auto &row : instance.covariance_matrix) {
         for (const auto &value : row) {
             os << value << " ";
         }
@@ -92,4 +100,4 @@ std::ostream & operator <<(std::ostream & os, const Instance & instance) {
     return os;
 }
 
-}
+}  // namespace mopop
