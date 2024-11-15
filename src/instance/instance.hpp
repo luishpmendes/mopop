@@ -159,7 +159,7 @@ class Instance {
    * assets.
    * - Each row in the `covariance_matrix` must have a size equal to the number
    * of assets.
-   * - The size of the `senses` vector must be equal to 2.
+   * - The size of the `senses` vector must be equal to 3.
    *
    * @return true if all conditions are met, false otherwise.
    */

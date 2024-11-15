@@ -122,7 +122,7 @@ class Solution {
    * This constructor initializes a Solution object with the following default
    * values:
    * - `instance`: A new Instance object.
-   * - `value`: A vector of size 2, initialized with 0.0.
+   * - `value`: A vector of size 3, initialized with 0.0.
    * - `weight`: Initialized to 0.
    */
   Solution();
@@ -145,7 +145,7 @@ class Solution {
    * This function verifies the feasibility of the solution by performing the
    * following checks:
    * 1. Ensures the instance is valid.
-   * 2. Ensures the value vector has exactly 2 elements.
+   * 2. Ensures the value vector has exactly 3 elements.
    * 3. Ensures the weight vector has the same number of elements as the number
    * of assets in the instance.
    * 4. Ensures each weight is between 0.0 and 1.0 (inclusive).

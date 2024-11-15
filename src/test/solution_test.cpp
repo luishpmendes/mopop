@@ -19,7 +19,7 @@ int main() {
   assert(solution.is_feasible());
   assert(solution.weight.size() == 7);
   assert(solution.weight[0] == 1.0);
-  assert(solution.value.size() == 2);
+  assert(solution.value.size() == 3);
   assert(solution.value[0] == 0.0012912465706528247);
   assert(solution.value[1] == 0.00018574179740743447);
 
@@ -33,7 +33,7 @@ int main() {
   assert(solution.is_feasible());
   assert(solution.weight.size() == 7);
   assert(solution.weight[6] == 1.0);
-  assert(solution.value.size() == 2);
+  assert(solution.value.size() == 3);
   assert(solution.value[0] == 0.005107159883158241);
   assert(solution.value[1] == 0.001061156598370683);
 
@@ -48,7 +48,7 @@ int main() {
   assert(solution.weight.size() == 7);
   assert(solution.weight[0] == 1.0 / 7.0);
   assert(solution.weight[6] == 1.0 / 7.0);
-  assert(solution.value.size() == 2);
+  assert(solution.value.size() == 3);
   assert(fabs(solution.value[0] - 0.00232273) < 0.00000001);
   assert(fabs(solution.value[1] - 0.000202819) < 0.000000001);
 

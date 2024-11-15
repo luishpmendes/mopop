@@ -65,7 +65,7 @@ bool Solution::dominates(const std::vector<double>& valueA,
  * of assets in the instance.
  */
 Solution::Solution(Instance& instance, const std::vector<double>& key)
-    : instance(instance), value(2, 0.0), weight(instance.num_assets, 0.0) {
+    : instance(instance), value(3, 0.0), weight(instance.num_assets, 0.0) {
   if (key.size() != instance.num_assets) {
     throw std::runtime_error("Invalid key size");
   }
@@ -89,6 +89,8 @@ Solution::Solution(Instance& instance, const std::vector<double>& key)
           this->weight[i] * this->weight[j] * instance.covariance_matrix[i][j];
     }
   }
+
+  this->value[2] = this->value[0] / std::sqrt(this->value[1]);
 }
 
 /**
@@ -106,7 +108,7 @@ Solution::Solution(Instance& instance, const std::vector<double>& key)
  * @throws std::runtime_error If the file cannot be opened.
  */
 Solution::Solution(Instance& instance, const std::string& filename)
-    : instance(instance), value(2, 0.0), weight(instance.num_assets, 0.0) {
+    : instance(instance), value(3, 0.0), weight(instance.num_assets, 0.0) {
   std::ifstream file(filename);
   std::string line;
 
@@ -138,7 +140,7 @@ Solution::Solution(Instance& instance, const std::string& filename)
  * needed to initialize the Solution.
  */
 Solution::Solution(Instance& instance)
-    : instance(instance), value(2, 0.0), weight(instance.num_assets, 0.0) {}
+    : instance(instance), value(3, 0.0), weight(instance.num_assets, 0.0) {}
 
 /**
  * @brief Default constructor for the Solution class.
@@ -146,10 +148,10 @@ Solution::Solution(Instance& instance)
  * This constructor initializes a Solution object with the following default
  * values:
  * - `instance`: A new Instance object.
- * - `value`: A vector of size 2, initialized with 0.0.
+ * - `value`: A vector of size 3, initialized with 0.0.
  * - `weight`: Initialized to 0.
  */
-Solution::Solution() : instance(*(new Instance())), value(2, 0.0), weight(0) {}
+Solution::Solution() : instance(*(new Instance())), value(3, 0.0), weight(0) {}
 
 /**
  * @brief Assignment operator for the Solution class.
@@ -176,7 +178,7 @@ Solution& Solution::operator=(const Solution& solution) {
  * This function verifies the feasibility of the solution by performing the
  * following checks:
  * 1. Ensures the instance is valid.
- * 2. Ensures the value vector has exactly 2 elements.
+ * 2. Ensures the value vector has exactly 3 elements.
  * 3. Ensures the weight vector has the same number of elements as the number of
  * assets in the instance.
  * 4. Ensures each weight is between 0.0 and 1.0 (inclusive).
@@ -189,7 +191,7 @@ bool Solution::is_feasible() const {
     return false;
   }
 
-  if (this->value.size() != 2) {
+  if (this->value.size() != 3) {
     return false;
   }
 

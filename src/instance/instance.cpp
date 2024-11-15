@@ -73,7 +73,7 @@ void Instance::load_instance(const std::string &expected_returns_filename,
 
   covariance_file.close();
   this->num_assets = tickers.size();
-  this->senses = {NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE};
+  this->senses = {NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE, NSBRKGA::Sense::MAXIMIZE};
 }
 
 /**
@@ -93,7 +93,7 @@ Instance::Instance(const std::vector<std::string> &tickers,
       tickers(tickers),
       expected_returns(expected_returns),
       covariance_matrix(covariance_matrix),
-      senses({NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE}) {}
+      senses({NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE, NSBRKGA::Sense::MAXIMIZE}) {}
 
 /**
  * @brief Constructs an Instance object and initializes its data members.
@@ -178,7 +178,7 @@ Instance &Instance::operator=(const Instance &instance) {
  * assets.
  * - Each row in the `covariance_matrix` must have a size equal to the number of
  * assets.
- * - The size of the `senses` vector must be equal to 2.
+ * - The size of the `senses` vector must be equal to 3.
  *
  * @return true if all conditions are met, false otherwise.
  */
@@ -205,7 +205,7 @@ bool Instance::is_valid() const {
     }
   }
 
-  if (this->senses.size() != 2) {
+  if (this->senses.size() != 3) {
     return false;
   }
 
