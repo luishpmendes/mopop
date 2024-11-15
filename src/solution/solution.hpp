@@ -90,6 +90,7 @@ class Solution {
    * between the assets.
    * - The third value (value[2]) is the ratio of the first value to the square
    * root of the second value.
+   * - The fourth value (value[3]) is the entropy of the weights.
    *
    * The function assumes that the `weight`, `instance.expected_returns`, and
    * `instance.covariance_matrix` are properly initialized and that `value` is a
@@ -147,7 +148,7 @@ class Solution {
    * This constructor initializes a Solution object with the following default
    * values:
    * - `instance`: A new Instance object.
-   * - `value`: A vector of size 3, initialized with 0.0.
+   * - `value`: A vector of size 4, initialized with 0.0.
    * - `weight`: Initialized to 0.
    */
   Solution();
@@ -170,7 +171,7 @@ class Solution {
    * This function verifies the feasibility of the solution by performing the
    * following checks:
    * 1. Ensures the instance is valid.
-   * 2. Ensures the value vector has exactly 3 elements.
+   * 2. Ensures the value vector has exactly 4 elements.
    * 3. Ensures the weight vector has the same number of elements as the number
    * of assets in the instance.
    * 4. Ensures each weight is between 0.0 and 1.0 (inclusive).

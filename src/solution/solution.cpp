@@ -61,6 +61,7 @@ bool Solution::dominates(const std::vector<double>& valueA,
  * the assets.
  * - The third value (value[2]) is the ratio of the first value to the square
  * root of the second value.
+ * - The fourth value (value[3]) is the entropy of the weights.
  *
  * The function assumes that the `weight`, `instance.expected_returns`, and
  * `instance.covariance_matrix` are properly initialized and that `value` is a
@@ -76,6 +77,10 @@ void Solution::compute_value() {
     for (unsigned j = 0; j < this->instance.num_assets; j++) {
       this->value[1] += this->weight[i] * this->weight[j] *
                         this->instance.covariance_matrix[i][j];
+    }
+
+    if (this->weight[i] > 0.0) {
+      this->value[3] -= this->weight[i] * std::log2(this->weight[i]);
     }
   }
 
@@ -96,7 +101,7 @@ void Solution::compute_value() {
  * of assets in the instance.
  */
 Solution::Solution(Instance& instance, const std::vector<double>& key)
-    : instance(instance), value(3, 0.0), weight(instance.num_assets, 0.0) {
+    : instance(instance), value(4, 0.0), weight(instance.num_assets, 0.0) {
   if (key.size() != instance.num_assets) {
     throw std::runtime_error("Invalid key size");
   }
@@ -130,7 +135,7 @@ Solution::Solution(Instance& instance, const std::vector<double>& key)
  * @throws std::runtime_error If the file cannot be opened.
  */
 Solution::Solution(Instance& instance, const std::string& filename)
-    : instance(instance), value(3, 0.0), weight(instance.num_assets, 0.0) {
+    : instance(instance), value(4, 0.0), weight(instance.num_assets, 0.0) {
   std::ifstream file(filename);
   std::string line;
 
@@ -164,7 +169,7 @@ Solution::Solution(Instance& instance, const std::string& filename)
  * needed to initialize the Solution.
  */
 Solution::Solution(Instance& instance)
-    : instance(instance), value(3, 0.0), weight(instance.num_assets, 0.0) {}
+    : instance(instance), value(4, 0.0), weight(instance.num_assets, 0.0) {}
 
 /**
  * @brief Default constructor for the Solution class.
@@ -172,7 +177,7 @@ Solution::Solution(Instance& instance)
  * This constructor initializes a Solution object with the following default
  * values:
  * - `instance`: A new Instance object.
- * - `value`: A vector of size 3, initialized with 0.0.
+ * - `value`: A vector of size 4, initialized with 0.0.
  * - `weight`: Initialized to 0.
  */
 Solution::Solution() : instance(*(new Instance())), value(3, 0.0), weight(0) {}
@@ -202,7 +207,7 @@ Solution& Solution::operator=(const Solution& solution) {
  * This function verifies the feasibility of the solution by performing the
  * following checks:
  * 1. Ensures the instance is valid.
- * 2. Ensures the value vector has exactly 3 elements.
+ * 2. Ensures the value vector has exactly 4 elements.
  * 3. Ensures the weight vector has the same number of elements as the number of
  * assets in the instance.
  * 4. Ensures each weight is between 0.0 and 1.0 (inclusive).
@@ -215,7 +220,7 @@ bool Solution::is_feasible() const {
     return false;
   }
 
-  if (this->value.size() != 3) {
+  if (this->value.size() != 4) {
     return false;
   }
 
