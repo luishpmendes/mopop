@@ -1,6 +1,6 @@
 CPP=g++
 CARGS=-std=c++17 -O3 -g0 -m64
-BRKGAINC=-I ../nsbrkga/nsbrkga
+BRKGAINC=-I /home/luishpmendes/UNICAMP/Doutorado/nsbrkga/nsbrkga
 BOOSTINC=-I /opt/boost/include -L /opt/boost/lib -lboost_serialization
 PAGMOINC=-I /opt/pagmo/include -L /opt/pagmo/lib -Wl,-R/opt/pagmo/lib -lpagmo -ltbb -pthread
 INC=-I src $(BRKGAINC) $(BOOSTINC) $(PAGMOINC)
@@ -31,6 +31,6 @@ $(BIN)/test/instance_test : $(BIN)/instance/instance.o \
 
 instance_test : $(BIN)/test/instance_test
 
-tests : instance_test \
+tests : instance_test
 
 all : tests
