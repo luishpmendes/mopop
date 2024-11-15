@@ -18,11 +18,11 @@ int main() {
 
   assert(solution.is_feasible());
   assert(solution.weight.size() == 7);
-  std::cout << "fabs(solution.weight[0] - 1.0): " << fabs(solution.weight[0] - 1.0) << std::endl;
   assert(fabs(solution.weight[0] - 1.0) < std::numeric_limits<double>::epsilon());
   assert(solution.value.size() == 3);
   assert(fabs(solution.value[0] - 0.0012912465706528247) < std::numeric_limits<double>::epsilon());
   assert(fabs(solution.value[1] - 0.00018574179740743447) < std::numeric_limits<double>::epsilon());
+  assert(fabs(solution.value[2] - 0.094744576568404567) < std::numeric_limits<double>::epsilon());
 
   std::cout << solution << std::endl;
 
@@ -37,6 +37,7 @@ int main() {
   assert(solution.value.size() == 3);
   assert(fabs(solution.value[0] - 0.005107159883158241) < std::numeric_limits<double>::epsilon());
   assert(fabs(solution.value[1] - 0.001061156598370683) < std::numeric_limits<double>::epsilon());
+  assert(fabs(solution.value[2] - 0.1567796586383924) < std::numeric_limits<double>::epsilon());
 
   std::cout << solution << std::endl;
 
@@ -52,6 +53,7 @@ int main() {
   assert(solution.value.size() == 3);
   assert(fabs(solution.value[0] - 0.00232273) < 0.00000001);
   assert(fabs(solution.value[1] - 0.000202819) < 0.000000001);
+  assert(fabs(solution.value[2] - 0.163096) < 0.000001);
 
   std::cout << solution << std::endl;
 
