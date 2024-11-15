@@ -18,6 +18,7 @@ int main() {
 
   assert(solution.is_feasible());
   assert(solution.weight.size() == 7);
+  std::cout << "fabs(solution.weight[0] - 1.0): " << fabs(solution.weight[0] - 1.0) << std::endl;
   assert(fabs(solution.weight[0] - 1.0) < std::numeric_limits<double>::epsilon());
   assert(solution.value.size() == 3);
   assert(fabs(solution.value[0] - 0.0012912465706528247) < std::numeric_limits<double>::epsilon());

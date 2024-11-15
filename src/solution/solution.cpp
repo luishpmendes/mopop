@@ -52,6 +52,37 @@ bool Solution::dominates(const std::vector<double>& valueA,
 }
 
 /**
+ * @brief Computes the value metrics for the solution.
+ *
+ * This function calculates three value metrics for the solution:
+ * - The first value (value[0]) is the weighted sum of the expected returns of
+ * the assets.
+ * - The second value (value[1]) is the weighted sum of the covariances between
+ * the assets.
+ * - The third value (value[2]) is the ratio of the first value to the square
+ * root of the second value.
+ *
+ * The function assumes that the `weight`, `instance.expected_returns`, and
+ * `instance.covariance_matrix` are properly initialized and that `value` is a
+ * vector of at least three elements.
+ */
+void Solution::compute_value() {
+  this->value[0] = 0.0;
+  this->value[1] = 0.0;
+
+  for (unsigned i = 0; i < this->instance.num_assets; i++) {
+    this->value[0] += this->weight[i] * this->instance.expected_returns[i];
+
+    for (unsigned j = 0; j < this->instance.num_assets; j++) {
+      this->value[1] += this->weight[i] * this->weight[j] *
+                        this->instance.covariance_matrix[i][j];
+    }
+  }
+
+  this->value[2] = this->value[0] / std::sqrt(this->value[1]);
+}
+
+/**
  * @brief Constructs a new Solution object.
  *
  * This constructor initializes the Solution object with the given instance and
@@ -81,16 +112,7 @@ Solution::Solution(Instance& instance, const std::vector<double>& key)
     this->weight[i] /= total_weight;
   }
 
-  for (unsigned i = 0; i < instance.num_assets; i++) {
-    this->value[0] += this->weight[i] * instance.expected_returns[i];
-
-    for (unsigned j = 0; j < instance.num_assets; j++) {
-      this->value[1] +=
-          this->weight[i] * this->weight[j] * instance.covariance_matrix[i][j];
-    }
-  }
-
-  this->value[2] = this->value[0] / std::sqrt(this->value[1]);
+  this->compute_value();
 }
 
 /**
@@ -128,6 +150,8 @@ Solution::Solution(Instance& instance, const std::string& filename)
       this->weight[i] = std::stod(weight_str);
     }
   }
+
+  this->compute_value();
 }
 
 /**

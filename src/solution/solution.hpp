@@ -25,16 +25,22 @@ namespace mopop {
  * - `value`: A vector of double values representing the solution's values.
  *
  * The class provides the following methods:
- * - `dominates(const std::vector<double>&, const std::vector<double>&, const std::vector<NSBRKGA::Sense>&)`: 
- *   Checks if one vector of values dominates another based on given senses.
- * - `Solution(Instance&, const std::vector<double>&)`: Constructs a Solution object with the given instance and key.
- * - `Solution(Instance&, const std::string&)`: Constructs a Solution object by reading asset weights from a file.
- * - `Solution(Instance&)`: Constructs a Solution object using the provided Instance reference.
+ * - `dominates(const std::vector<double>&, const std::vector<double>&, const
+ * std::vector<NSBRKGA::Sense>&)`: Checks if one vector of values dominates
+ * another based on given senses.
+ * - `Solution(Instance&, const std::vector<double>&)`: Constructs a Solution
+ * object with the given instance and key.
+ * - `Solution(Instance&, const std::string&)`: Constructs a Solution object by
+ * reading asset weights from a file.
+ * - `Solution(Instance&)`: Constructs a Solution object using the provided
+ * Instance reference.
  * - `Solution()`: Default constructor for the Solution class.
  * - `operator=(const Solution&)`: Assignment operator for the Solution class.
  * - `is_feasible() const`: Checks if the solution is feasible.
- * - `dominates(const Solution&) const`: Determines if the current solution dominates another solution.
- * - `operator<<(std::ostream&, const Solution&)`: Overloads the << operator to output the Solution object to an ostream.
+ * - `dominates(const Solution&) const`: Determines if the current solution
+ * dominates another solution.
+ * - `operator<<(std::ostream&, const Solution&)`: Overloads the << operator to
+ * output the Solution object to an ostream.
  */
 class Solution {
  public:
@@ -73,6 +79,25 @@ class Solution {
    */
   std::vector<double> value;
 
+ private:
+  /**
+   * @brief Computes the value metrics for the solution.
+   *
+   * This function calculates three value metrics for the solution:
+   * - The first value (value[0]) is the weighted sum of the expected returns of
+   * the assets.
+   * - The second value (value[1]) is the weighted sum of the covariances
+   * between the assets.
+   * - The third value (value[2]) is the ratio of the first value to the square
+   * root of the second value.
+   *
+   * The function assumes that the `weight`, `instance.expected_returns`, and
+   * `instance.covariance_matrix` are properly initialized and that `value` is a
+   * vector of at least three elements.
+   */
+  void compute_value();
+
+ public:
   /**
    * @brief Constructs a new Solution object.
    *
