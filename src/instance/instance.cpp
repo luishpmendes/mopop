@@ -144,6 +144,75 @@ Instance::Instance()
       senses() {}
 
 /**
+ * @brief Assignment operator for the Instance class.
+ *
+ * This operator assigns the values from the given instance to the current
+ * instance. It performs a deep copy of the member variables to ensure that the
+ * current instance has the same values as the given instance.
+ *
+ * @param instance The instance to be copied.
+ * @return A reference to the current instance after assignment.
+ */
+Instance &Instance::operator=(const Instance &instance) {
+  if (this != &instance) {
+    this->num_assets = instance.num_assets;
+    this->tickers = instance.tickers;
+    this->expected_returns = instance.expected_returns;
+    this->covariance_matrix = instance.covariance_matrix;
+    this->senses = instance.senses;
+  }
+
+  return *this;
+}
+
+/**
+ * @brief Checks if the instance is valid.
+ *
+ * This function verifies the validity of the instance by checking the following
+ * conditions:
+ * - The number of assets (`num_assets`) must be greater than 0.
+ * - The size of the `tickers` vector must be equal to the number of assets.
+ * - The size of the `expected_returns` vector must be equal to the number of
+ * assets.
+ * - The size of the `covariance_matrix` vector must be equal to the number of
+ * assets.
+ * - Each row in the `covariance_matrix` must have a size equal to the number of
+ * assets.
+ * - The size of the `senses` vector must be equal to 2.
+ *
+ * @return true if all conditions are met, false otherwise.
+ */
+bool Instance::is_valid() const {
+  if (this->num_assets == 0) {
+    return false;
+  }
+
+  if (this->tickers.size() != this->num_assets) {
+    return false;
+  }
+
+  if (this->expected_returns.size() != this->num_assets) {
+    return false;
+  }
+
+  if (this->covariance_matrix.size() != this->num_assets) {
+    return false;
+  }
+
+  for (const auto &row : this->covariance_matrix) {
+    if (row.size() != this->num_assets) {
+      return false;
+    }
+  }
+
+  if (this->senses.size() != 2) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * @brief Overloads the << operator to print the details of an Instance object.
  *
  * This function outputs the number of assets, tickers with their expected

@@ -13,6 +13,7 @@ int main() {
 
   instance = mopop::Instance(expected_returns_filename, covariance_filename);
 
+  assert(instance.is_valid());
   assert(instance.num_assets == 7);
   assert(instance.tickers.size() == 7);
   assert(instance.tickers.front() == "AAPL34.SA");

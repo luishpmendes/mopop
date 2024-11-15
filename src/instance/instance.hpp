@@ -110,7 +110,7 @@ class Instance {
    * data.
    */
   Instance(const std::string& expected_returns_filename,
-           const std::string& covariance_file);
+           const std::string& covariance_filename);
 
   /**
    * @brief Copy constructor for the Instance class.
@@ -133,6 +133,27 @@ class Instance {
    * - senses is initialized as an empty container.
    */
   Instance();
+
+  Instance& operator=(const Instance& instance);
+
+  /**
+   * @brief Checks if the instance is valid.
+   *
+   * This function verifies the validity of the instance by checking the
+   * following conditions:
+   * - The number of assets (`num_assets`) must be greater than 0.
+   * - The size of the `tickers` vector must be equal to the number of assets.
+   * - The size of the `expected_returns` vector must be equal to the number of
+   * assets.
+   * - The size of the `covariance_matrix` vector must be equal to the number of
+   * assets.
+   * - Each row in the `covariance_matrix` must have a size equal to the number
+   * of assets.
+   * - The size of the `senses` vector must be equal to 2.
+   *
+   * @return true if all conditions are met, false otherwise.
+   */
+  bool is_valid() const;
 
   /**
    * @brief Overloads the << operator to print the details of an Instance
