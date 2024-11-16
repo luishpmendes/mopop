@@ -100,7 +100,7 @@ void Solution::compute_value() {
  * @throws std::runtime_error if the size of the key does not match the number
  * of assets in the instance.
  */
-Solution::Solution(Instance& instance, const std::vector<double>& key)
+Solution::Solution(const Instance& instance, const std::vector<double>& key)
     : instance(instance), value(4, 0.0), weight(instance.num_assets, 0.0) {
   if (key.size() != instance.num_assets) {
     throw std::runtime_error("Invalid key size");
@@ -191,15 +191,15 @@ Solution::Solution() : instance(*(new Instance())), value(3, 0.0), weight(0) {}
  * @param solution The Solution object to be copied.
  * @return A reference to the current Solution object.
  */
-Solution& Solution::operator=(const Solution& solution) {
-  if (this != &solution) {
-    this->instance = solution.instance;
-    this->value = solution.value;
-    this->weight = solution.weight;
-  }
+// Solution& Solution::operator=(const Solution& solution) {
+//   if (this != &solution) {
+//     this->instance = solution.instance;
+//     this->value = solution.value;
+//     this->weight = solution.weight;
+//   }
 
-  return *this;
-}
+//   return *this;
+// }
 
 /**
  * @brief Checks if the solution is feasible.
@@ -244,7 +244,7 @@ bool Solution::is_feasible() const {
     sum_weight += this->weight[i];
   }
 
-  if (sum_weight > 1.0) {
+  if (sum_weight > 1.0 + std::numeric_limits<float>::epsilon()) {
     return false;
   }
 

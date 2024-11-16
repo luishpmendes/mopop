@@ -66,7 +66,7 @@ class Solution {
   /**
    * @brief Reference to an Instance object.
    */
-  Instance& instance;
+  const Instance& instance;
 
   /**
    * @brief A vector to store weights as double precision floating point
@@ -113,7 +113,7 @@ class Solution {
    * @throws std::runtime_error if the size of the key does not match the number
    * of assets in the instance.
    */
-  Solution(Instance& instance, const std::vector<double>& key);
+  Solution(const Instance& instance, const std::vector<double>& key);
 
   /**
    * @brief Constructs a Solution object by reading asset weights from a file.
@@ -163,7 +163,7 @@ class Solution {
    * @param solution The Solution object to be copied.
    * @return A reference to the current Solution object.
    */
-  Solution& operator=(const Solution& solution);
+  // Solution& operator=(const Solution& solution);
 
   /**
    * @brief Checks if the solution is feasible.

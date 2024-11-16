@@ -74,7 +74,7 @@ void Instance::load_instance(const std::string &expected_returns_filename,
   covariance_file.close();
   this->num_assets = tickers.size();
   this->senses = {NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE,
-                  NSBRKGA::Sense::MAXIMIZE};
+                  NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE};
 }
 
 /**
@@ -95,7 +95,7 @@ Instance::Instance(const std::vector<std::string> &tickers,
       expected_returns(expected_returns),
       covariance_matrix(covariance_matrix),
       senses({NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE,
-              NSBRKGA::Sense::MAXIMIZE}) {}
+              NSBRKGA::Sense::MAXIMIZE, NSBRKGA::Sense::MINIMIZE}) {}
 
 /**
  * @brief Constructs an Instance object and initializes its data members.
@@ -180,34 +180,42 @@ Instance &Instance::operator=(const Instance &instance) {
  * assets.
  * - Each row in the `covariance_matrix` must have a size equal to the number of
  * assets.
- * - The size of the `senses` vector must be equal to 3.
+ * - The size of the `senses` vector must be equal to 4.
  *
  * @return true if all conditions are met, false otherwise.
  */
 bool Instance::is_valid() const {
   if (this->num_assets == 0) {
+    std::cout << "this->num_assets == 0" << std::endl;
     return false;
   }
 
   if (this->tickers.size() != this->num_assets) {
+    std::cout << "this->tickers.size() != this->num_assets" << std::endl;
     return false;
   }
 
   if (this->expected_returns.size() != this->num_assets) {
+    std::cout << "this->expected_returns.size() != this->num_assets"
+              << std::endl;
     return false;
   }
 
   if (this->covariance_matrix.size() != this->num_assets) {
+    std::cout << "this->covariance_matrix.size() != this->num_assets"
+              << std::endl;
     return false;
   }
 
   for (const auto &row : this->covariance_matrix) {
     if (row.size() != this->num_assets) {
+      std::cout << "row.size() != this->num_assets" << std::endl;
       return false;
     }
   }
 
-  if (this->senses.size() != 3) {
+  if (this->senses.size() != 4) {
+    std::cout << "this->senses.size() != 4" << std::endl;
     return false;
   }
 

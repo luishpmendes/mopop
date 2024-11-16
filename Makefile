@@ -43,7 +43,23 @@ $(BIN)/test/solution_test : $(BIN)/instance/instance.o \
 
 solution_test : $(BIN)/test/solution_test
 
+$(BIN)/test/nsga2_solver_test : $(BIN)/instance/instance.o \
+                                $(BIN)/solution/solution.o \
+                                $(BIN)/solver/solver.o \
+                                $(BIN)/solver/nsga2/problem.o \
+                                $(BIN)/solver/nsga2/nsga2_solver.o \
+                                $(BIN)/test/nsga2_solver_test.o
+	@echo "--> Linking objects..."
+	$(CPP) -o $@ $^ $(CARGS) $(INC)
+	@echo
+	@echo "--> Running test..."
+	$(BIN)/test/nsga2_solver_test
+	@echo
+
+nsga2_solver_test : $(BIN)/test/nsga2_solver_test
+
 tests : instance_test \
-				solution_test
+				solution_test \
+				nsga2_solver_test
 
 all : tests
