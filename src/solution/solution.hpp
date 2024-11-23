@@ -5,42 +5,8 @@
 namespace mopop {
 /**
  * @class Solution
- * @brief Represents a solution for an optimization problem.
- *
- * The Solution class encapsulates the data and methods required to represent
- * and manipulate a solution for a given optimization problem. It includes
- * methods to check domination between solutions, verify feasibility, and
- * perform various initializations.
- *
- * @details
- * The Solution class provides multiple constructors to initialize a solution
- * object using different data sources, such as vectors of weights or files
- * containing asset weights. It also includes methods to check if one solution
- * dominates another, verify the feasibility of a solution, and output the
- * solution to an ostream.
- *
- * The class contains the following members:
- * - `instance`: A reference to an Instance object containing the problem data.
- * - `weight`: A vector of double values representing the weights of assets.
- * - `value`: A vector of double values representing the solution's values.
- *
- * The class provides the following methods:
- * - `dominates(const std::vector<double>&, const std::vector<double>&, const
- * std::vector<NSBRKGA::Sense>&)`: Checks if one vector of values dominates
- * another based on given senses.
- * - `Solution(Instance&, const std::vector<double>&)`: Constructs a Solution
- * object with the given instance and key.
- * - `Solution(Instance&, const std::string&)`: Constructs a Solution object by
- * reading asset weights from a file.
- * - `Solution(Instance&)`: Constructs a Solution object using the provided
- * Instance reference.
- * - `Solution()`: Default constructor for the Solution class.
- * - `operator=(const Solution&)`: Assignment operator for the Solution class.
- * - `is_feasible() const`: Checks if the solution is feasible.
- * - `dominates(const Solution&) const`: Determines if the current solution
- * dominates another solution.
- * - `operator<<(std::ostream&, const Solution&)`: Overloads the << operator to
- * output the Solution object to an ostream.
+ * @brief The Solution class represents a solution for the Multi-Objective
+ * Portfolio Optimization Problem.
  */
 class Solution {
  public:
@@ -69,13 +35,14 @@ class Solution {
   const Instance& instance;
 
   /**
-   * @brief A vector to store weights as double precision floating point
+   * @brief The vector to store weights as double precision floating point
    * numbers.
    */
   std::vector<double> weight;
 
   /**
-   * @brief A vector to store double precision floating point values.
+   * @brief The vector to store double precision floating point objective
+   * values.
    */
   std::vector<double> value;
 

@@ -11,57 +11,33 @@
 namespace mopop {
 /**
  * @class Instance
- * @brief Represents a financial instance with assets, tickers, expected
- * returns, and covariance matrix.
- *
- * The Instance class encapsulates data related to financial assets, including
- * their ticker symbols, expected returns, and the covariance matrix. It
- * provides functionality to load this data from files and supports various
- * constructors for initialization.
+ * @brief The Instance class represents an instance of the Multi-Objective
+ * Portfolio Optimization Problem.
  */
 class Instance {
  public:
   /**
-   * @brief Number of assets.
-   *
-   * This variable holds the total count of assets.
+   * @brief The number of assets.
    */
   unsigned num_assets;
 
   /**
-   * @brief A vector that stores a list of ticker symbols.
-   *
-   * This vector holds strings representing ticker symbols, which are
-   * typically used to uniquely identify publicly traded companies on
-   * stock exchanges.
+   * @brief The vector that stores a list of ticker symbols.
    */
   std::vector<std::string> tickers;
 
   /**
-   * @brief A vector to store expected returns.
-   *
-   * This vector holds the expected return values for a series of investments or
-   * financial instruments. Each element in the vector represents the expected
-   * return for a specific investment.
+   * @brief The vector to store expected returns.
    */
   std::vector<double> expected_returns;
 
   /**
-   * @brief A 2D vector representing the covariance matrix.
-   *
-   * This member variable stores the covariance matrix, which is a
-   * square matrix giving the covariance between each pair of elements
-   * in a dataset. The outer vector represents the rows of the matrix,
-   * and the inner vector represents the columns.
+   * @brief The 2D vector to store the covariance matrix.
    */
   std::vector<std::vector<double>> covariance_matrix;
 
   /**
-   * @brief A vector that holds the senses for the NSBRKGA algorithm.
-   *
-   * This vector contains elements of type NSBRKGA::Sense, which represent
-   * the sense (e.g., minimization or maximization) of the objectives in
-   * the optimization problem being solved by the NSBRKGA algorithm.
+   * @brief The vector that holds the senses for the optimization algorithm.
    */
   std::vector<NSBRKGA::Sense> senses;
 
