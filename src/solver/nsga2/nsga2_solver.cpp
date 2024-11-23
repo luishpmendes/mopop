@@ -10,7 +10,8 @@ namespace mopop {
  *
  * @param instance The instance to be solved.
  */
-NSGA2_Solver::NSGA2_Solver(const Instance &instance) : Solver::Solver(instance) {}
+NSGA2_Solver::NSGA2_Solver(const Instance &instance)
+    : Solver::Solver(instance) {}
 
 /**
  * @brief Constructs a new empty solver.
