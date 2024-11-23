@@ -25,12 +25,10 @@ void NSPSO_Solver::solve() {
   this->start_time = std::chrono::steady_clock::now();
 
   pagmo::problem prob{Problem(this->instance)};
-
   pagmo::algorithm algo{
       pagmo::nspso(1, this->omega, this->c1, this->c2, this->chi, this->v_coeff,
                    this->leader_selection_range, this->diversity_mechanism,
                    this->memory, this->seed)};
-
   pagmo::population pop{
       prob, this->population_size - this->initial_individuals.size(),
       this->seed};
