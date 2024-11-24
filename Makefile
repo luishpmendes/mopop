@@ -103,11 +103,27 @@ $(BIN)/test/mhaco_solver_test : $(BIN)/instance/instance.o \
 
 mhaco_solver_test : $(BIN)/test/mhaco_solver_test
 
+$(BIN)/test/ihs_solver_test : $(BIN)/instance/instance.o \
+                              $(BIN)/solution/solution.o \
+                              $(BIN)/solver/solver.o \
+                              $(BIN)/solver/ihs/problem.o \
+                              $(BIN)/solver/ihs/ihs_solver.o \
+                              $(BIN)/test/ihs_solver_test.o
+	@echo "--> Linking objects..."
+	$(CPP) -o $@ $^ $(CARGS) $(INC)
+	@echo
+	@echo "--> Running test..."
+	$(BIN)/test/ihs_solver_test
+	@echo
+
+ihs_solver_test : $(BIN)/test/ihs_solver_test
+
 tests : instance_test \
 				solution_test \
 				nsga2_solver_test \
 				nspso_solver_test \
 				moead_solver_test \
-				mhaco_solver_test
+				mhaco_solver_test \
+				ihs_solver_test
 
 all : tests
