@@ -70,6 +70,7 @@ bool Solution::dominates(const std::vector<double>& valueA,
 void Solution::compute_value() {
   this->value[0] = 0.0;
   this->value[1] = 0.0;
+  this->value[3] = 0.0;
 
   for (unsigned i = 0; i < this->instance.num_assets; i++) {
     this->value[0] += this->weight[i] * this->instance.expected_returns[i];
@@ -113,8 +114,10 @@ Solution::Solution(const Instance& instance, const std::vector<double>& key)
     total_weight += this->weight[i];
   }
 
-  for (unsigned i = 0; i < instance.num_assets; i++) {
-    this->weight[i] /= total_weight;
+  if (total_weight > 0.0) {
+    for (unsigned i = 0; i < instance.num_assets; i++) {
+      this->weight[i] /= total_weight;
+    }
   }
 
   this->compute_value();
