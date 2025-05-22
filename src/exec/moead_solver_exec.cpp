@@ -1,4 +1,4 @@
-#include "solver/nsga2/nsga2_solver.hpp"
+#include "solver/moead/moead_solver.hpp"
 #include "utils/argument_parser.hpp"
 
 int main(int argc, char* argv[]) {
@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     mopop::Instance instance(
         arg_parser.option_value("--expected-returns-filename"),
         arg_parser.option_value("--covariance-filename"));
-    mopop::NSGA2_Solver solver(instance);
+    mopop::MOEAD_Solver solver(instance);
 
     if (arg_parser.option_exists("--seed")) {
       solver.set_seed(std::stoul(arg_parser.option_value("--seed")));
@@ -39,25 +39,40 @@ int main(int argc, char* argv[]) {
           std::stoul(arg_parser.option_value("--population-size"));
     }
 
-    if (arg_parser.option_exists("--crossover-probability")) {
-      solver.crossover_probability =
-          std::stod(arg_parser.option_value("--crossover-probability"));
+    if (arg_parser.option_exists("--weight-generation")) {
+      solver.weight_generation = arg_parser.option_value("--weight-generation");
     }
 
-    if (arg_parser.option_exists("--crossover-distribution")) {
-      solver.crossover_distribution =
-          std::stod(arg_parser.option_value("--crossover-distribution"));
+    if (arg_parser.option_exists("--decomposition")) {
+      solver.decomposition = arg_parser.option_value("--decomposition");
     }
 
-    if (arg_parser.option_exists("--mutation-probability")) {
-      solver.mutation_probability =
-          std::stod(arg_parser.option_value("--mutation-probability"));
+    if (arg_parser.option_exists("--neighbours")) {
+      solver.neighbours = std::stoul(arg_parser.option_value("--neighbours"));
     }
 
-    if (arg_parser.option_exists("--mutation-distribution")) {
-      solver.mutation_distribution =
-          std::stod(arg_parser.option_value("--mutation-distribution"));
+    if (arg_parser.option_exists("--cr")) {
+      solver.cr = std::stod(arg_parser.option_value("--cr"));
     }
+
+    if (arg_parser.option_exists("--f")) {
+      solver.f = std::stod(arg_parser.option_value("--f"));
+    }
+
+    if (arg_parser.option_exists("--eta-m")) {
+      solver.eta_m = std::stod(arg_parser.option_value("--eta-m"));
+    }
+
+    if (arg_parser.option_exists("--realb")) {
+      solver.realb = std::stod(arg_parser.option_value("--realb"));
+    }
+
+    if (arg_parser.option_exists("--limit")) {
+      solver.limit = std::stoul(arg_parser.option_value("--limit"));
+    }
+
+    solver.preserve_diversity =
+        arg_parser.option_exists("--preserve-diversity");
 
     solver.solve();
 
@@ -278,7 +293,7 @@ int main(int argc, char* argv[]) {
     }
   } else {
     std::cerr
-        << "./nsga2_solver_exec "
+        << "./moead_solver_exec "
         << "--instance <instance_filename> "
         << "--seed <seed> "
         << "--time-limit <time_limit> "
@@ -286,10 +301,15 @@ int main(int argc, char* argv[]) {
         << "--max-num-solutions <max_num_solutions> "
         << "--max-num-snapshots <max_num_snapshots> "
         << "--population-size <population_size> "
-        << "--crossover-probability <crossover_probability> "
-        << "--crossover-distribution <crossover_distribution> "
-        << "--mutation-probability <mutation_probability> "
-        << "--mutation-distribution <mutation_distribution> "
+        << "--weight-generation <weight_generation> "
+        << "--decomposition <decomposition> "
+        << "--neighbours <neighbours> "
+        << "--cr <cr> "
+        << "--f <f> "
+        << "--eta-m <eta_m> "
+        << "--realb <realb> "
+        << "--limit <limit> "
+        << "--preserve-diversity "
         << "--statistics <statistics_filename> "
         << "--solutions <solutions_filename> "
         << "--pareto <pareto_filename> "

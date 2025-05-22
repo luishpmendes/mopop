@@ -6,7 +6,9 @@ int main(int argc, char* argv[]) {
 
   if (arg_parser.option_exists("--expected-returns-filename") &&
       arg_parser.option_exists("--covariance-filename")) {
-    mopop::Instance instance(arg_parser.option_value("--expected-returns-filename"), arg_parser.option_value("--covariance-filename"));
+    mopop::Instance instance(
+        arg_parser.option_value("--expected-returns-filename"),
+        arg_parser.option_value("--covariance-filename"));
     mopop::NSPSO_Solver solver(instance);
 
     if (arg_parser.option_exists("--seed")) {
