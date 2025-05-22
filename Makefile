@@ -21,7 +21,7 @@ $(BIN)/%.o: $(SRC)/%.cpp
 	@echo
 
 $(BIN)/test/instance_test : $(BIN)/instance/instance.o \
-                            $(BIN)/test/instance_test.o
+														$(BIN)/test/instance_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -32,8 +32,8 @@ $(BIN)/test/instance_test : $(BIN)/instance/instance.o \
 instance_test : $(BIN)/test/instance_test
 
 $(BIN)/test/solution_test : $(BIN)/instance/instance.o \
-                            $(BIN)/solution/solution.o \
-                            $(BIN)/test/solution_test.o
+														$(BIN)/solution/solution.o \
+														$(BIN)/test/solution_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -44,11 +44,11 @@ $(BIN)/test/solution_test : $(BIN)/instance/instance.o \
 solution_test : $(BIN)/test/solution_test
 
 $(BIN)/test/nsga2_solver_test : $(BIN)/instance/instance.o \
-                                $(BIN)/solution/solution.o \
-                                $(BIN)/solver/solver.o \
-                                $(BIN)/solver/nsga2/problem.o \
-                                $(BIN)/solver/nsga2/nsga2_solver.o \
-                                $(BIN)/test/nsga2_solver_test.o
+																$(BIN)/solution/solution.o \
+																$(BIN)/solver/solver.o \
+																$(BIN)/solver/nsga2/problem.o \
+																$(BIN)/solver/nsga2/nsga2_solver.o \
+																$(BIN)/test/nsga2_solver_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -59,11 +59,11 @@ $(BIN)/test/nsga2_solver_test : $(BIN)/instance/instance.o \
 nsga2_solver_test : $(BIN)/test/nsga2_solver_test
 
 $(BIN)/test/nspso_solver_test : $(BIN)/instance/instance.o \
-                                $(BIN)/solution/solution.o \
-                                $(BIN)/solver/solver.o \
-                                $(BIN)/solver/nspso/problem.o \
-                                $(BIN)/solver/nspso/nspso_solver.o \
-                                $(BIN)/test/nspso_solver_test.o
+																$(BIN)/solution/solution.o \
+																$(BIN)/solver/solver.o \
+																$(BIN)/solver/nspso/problem.o \
+																$(BIN)/solver/nspso/nspso_solver.o \
+																$(BIN)/test/nspso_solver_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -74,11 +74,11 @@ $(BIN)/test/nspso_solver_test : $(BIN)/instance/instance.o \
 nspso_solver_test : $(BIN)/test/nspso_solver_test
 
 $(BIN)/test/moead_solver_test : $(BIN)/instance/instance.o \
-                                $(BIN)/solution/solution.o \
-                                $(BIN)/solver/solver.o \
-                                $(BIN)/solver/moead/problem.o \
-                                $(BIN)/solver/moead/moead_solver.o \
-                                $(BIN)/test/moead_solver_test.o
+																$(BIN)/solution/solution.o \
+																$(BIN)/solver/solver.o \
+																$(BIN)/solver/moead/problem.o \
+																$(BIN)/solver/moead/moead_solver.o \
+																$(BIN)/test/moead_solver_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -89,11 +89,11 @@ $(BIN)/test/moead_solver_test : $(BIN)/instance/instance.o \
 moead_solver_test : $(BIN)/test/moead_solver_test
 
 $(BIN)/test/mhaco_solver_test : $(BIN)/instance/instance.o \
-                                $(BIN)/solution/solution.o \
-                                $(BIN)/solver/solver.o \
-                                $(BIN)/solver/mhaco/problem.o \
-                                $(BIN)/solver/mhaco/mhaco_solver.o \
-                                $(BIN)/test/mhaco_solver_test.o
+																$(BIN)/solution/solution.o \
+																$(BIN)/solver/solver.o \
+																$(BIN)/solver/mhaco/problem.o \
+																$(BIN)/solver/mhaco/mhaco_solver.o \
+																$(BIN)/test/mhaco_solver_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -104,11 +104,11 @@ $(BIN)/test/mhaco_solver_test : $(BIN)/instance/instance.o \
 mhaco_solver_test : $(BIN)/test/mhaco_solver_test
 
 $(BIN)/test/ihs_solver_test : $(BIN)/instance/instance.o \
-                              $(BIN)/solution/solution.o \
-                              $(BIN)/solver/solver.o \
-                              $(BIN)/solver/ihs/problem.o \
-                              $(BIN)/solver/ihs/ihs_solver.o \
-                              $(BIN)/test/ihs_solver_test.o
+															$(BIN)/solution/solution.o \
+															$(BIN)/solver/solver.o \
+															$(BIN)/solver/ihs/problem.o \
+															$(BIN)/solver/ihs/ihs_solver.o \
+															$(BIN)/test/ihs_solver_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -119,11 +119,11 @@ $(BIN)/test/ihs_solver_test : $(BIN)/instance/instance.o \
 ihs_solver_test : $(BIN)/test/ihs_solver_test
 
 $(BIN)/test/nsbrkga_solver_test : $(BIN)/instance/instance.o \
-                                  $(BIN)/solution/solution.o \
-                                  $(BIN)/solver/solver.o \
-                                  $(BIN)/solver/nsbrkga/decoder.o \
-                                  $(BIN)/solver/nsbrkga/nsbrkga_solver.o \
-                                  $(BIN)/test/nsbrkga_solver_test.o
+																	$(BIN)/solution/solution.o \
+																	$(BIN)/solver/solver.o \
+																	$(BIN)/solver/nsbrkga/decoder.o \
+																	$(BIN)/solver/nsbrkga/nsbrkga_solver.o \
+																	$(BIN)/test/nsbrkga_solver_test.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
@@ -134,17 +134,30 @@ $(BIN)/test/nsbrkga_solver_test : $(BIN)/instance/instance.o \
 nsbrkga_solver_test : $(BIN)/test/nsbrkga_solver_test
 
 $(BIN)/exec/nsga2_solver_exec : $(BIN)/instance/instance.o \
-                                $(BIN)/solution/solution.o \
-                                $(BIN)/solver/solver.o \
-                                $(BIN)/solver/nsga2/problem.o \
-                                $(BIN)/solver/nsga2/nsga2_solver.o \
-                                $(BIN)/utils/argument_parser.o \
-                                $(BIN)/exec/nsga2_solver_exec.o
+																$(BIN)/solution/solution.o \
+																$(BIN)/solver/solver.o \
+																$(BIN)/solver/nsga2/problem.o \
+																$(BIN)/solver/nsga2/nsga2_solver.o \
+																$(BIN)/utils/argument_parser.o \
+																$(BIN)/exec/nsga2_solver_exec.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
 
 nsga2_solver_exec : $(BIN)/exec/nsga2_solver_exec
+
+$(BIN)/exec/nspso_solver_exec : $(BIN)/instance/instance.o \
+																$(BIN)/solution/solution.o \
+																$(BIN)/solver/solver.o \
+																$(BIN)/solver/nspso/problem.o \
+																$(BIN)/solver/nspso/nspso_solver.o \
+																$(BIN)/utils/argument_parser.o \
+																$(BIN)/exec/nspso_solver_exec.o
+	@echo "--> Linking objects..."
+	$(CPP) -o $@ $^ $(CARGS) $(INC)
+	@echo
+
+nspso_solver_exec : $(BIN)/exec/nspso_solver_exec
 
 tests : instance_test \
 				solution_test \
@@ -153,8 +166,9 @@ tests : instance_test \
 				moead_solver_test \
 				mhaco_solver_test \
 				ihs_solver_test \
-				nsbrkga_solver_test
+				nspso_solver_exec
 
-execs : nsga2_solver_exec
+execs : nsga2_solver_exec \
+				nspso_solver_exec
 
 all : tests execs
