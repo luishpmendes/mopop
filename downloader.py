@@ -27,7 +27,7 @@ def download_data(
   pd.DataFrame: A DataFrame containing the adjusted close price data for the specified tickers and date range.
   """
   try:
-    data = yf.download(tickers=tickers, interval=interval, start=start, end=end)[
+    data : pd.DataFrame = yf.download(tickers=tickers, interval=interval, start=start, end=end)[
         "Adj Close"
     ]
 
