@@ -261,7 +261,8 @@ int main(int argc, char* argv[]) {
   } else {
     std::cerr
         << "./hypervolume_calculator_exec "
-        << "--instance <instance_filename> "
+        << "--expected-returns-filename <expected_returns_filename> "
+        << "--covariance-filename <covariance_filename> "
         << "--reference-pareto <reference_pareto_filename> "
         << "--pareto-i <pareto_filename> "
         << "--best-solutions-snapshots-i <best_solutions_snapshots_filename> "
