@@ -43,8 +43,8 @@ i=0
 for solver in ${solvers[@]}; do
   for seed in ${seeds[@]}; do
     command="${path}/bin/exec/${solver}_solver_exec "
-    command+="--expected-returns-filename ${expected_returns} "
-    command+="--covariance-filename ${covariance} "
+    command+="--expected-returns-filename ${path}/${expected_returns} "
+    command+="--covariance-filename ${path}/${covariance} "
     command+="--seed ${seed} "
     command+="--time-limit ${time_limit} "
     command+="--max-num-solutions ${max_num_solutions} "
@@ -92,19 +92,13 @@ eval $final_command
 
 wait
 
+echo "Solvers finished..."
+
 solvers=(nsga2 nspso moead mhaco ihs nsbrkga)
 
-commands=()
-
-for ((i=0;i<num_processes;i++)); do
-  commands[$i]="("
-done
-
-i=0
-
 command="${path}/bin/exec/reference_pareto_front_and_point_calculator_exec "
-command+="--expected-returns-filename ${expected_returns} "
-command+="--covariance-filename ${covariance} "
+command+="--expected-returns-filename ${path}/${expected_returns} "
+command+="--covariance-filename ${path}/${covariance} "
 command+="--max-num-solutions ${max_ref_solutions} "
 j=0;
 for solver in ${solvers[@]}; do
@@ -116,40 +110,14 @@ for solver in ${solvers[@]}; do
     j=$((j+1))
   done
 done
-if [ $i -lt $num_processes ]; then
-  commands[$i]+="$command"
-else
-  commands[$((i%num_processes))]+=" && $command"
-fi
-i=$((i+1))
 
-
-for ((i=0;i<num_processes;i++)); do
-  commands[$i]+=") &>> ${path}/log_${i}.txt"
-done
-
-final_command=""
-
-for ((i=0;i<num_processes;i++)); do
-  command=${commands[$i]}
-  final_command+="$command & "
-done
-
-eval $final_command
+eval $command
 
 wait
 
-commands=()
-
-for ((i=0;i<num_processes;i++)); do
-  commands[$i]="("
-done
-
-i=0
-
 command="${path}/bin/exec/hypervolume_calculator_exec "
-command+="--expected-returns-filename ${expected_returns} "
-command+="--covariance-filename ${covariance} "
+command+="--expected-returns-filename ${path}/${expected_returns} "
+command+="--covariance-filename ${path}/${covariance} "
 command+="--reference-pareto ${path}/pareto/pareto.txt "
 command+="--reference-point ${path}/pareto/point.txt "
 j=0;
@@ -162,39 +130,14 @@ for solver in ${solvers[@]}; do
     j=$((j+1))
   done
 done
-if [ $i -lt $num_processes ]; then
-    commands[$i]+="$command"
-else
-    commands[$((i%num_processes))]+=" && $command"
-fi
-i=$((i+1))
 
-for ((i=0;i<num_processes;i++)); do
-    commands[$i]+=") &>> ${path}/log_${i}.txt"
-done
-
-final_command=""
-
-for ((i=0;i<num_processes;i++)); do
-    command=${commands[$i]}
-    final_command+="$command & "
-done
-
-eval $final_command
+eval $command
 
 wait
 
-commands=()
-
-for ((i=0;i<num_processes;i++)); do
-    commands[$i]="("
-done
-
-i=0
-
 command="${path}/bin/exec/modified_generational_distance_calculator_exec "
-command+="--expected-returns-filename ${expected_returns} "
-command+="--covariance-filename ${covariance} "
+command+="--expected-returns-filename ${path}/${expected_returns} "
+command+="--covariance-filename ${path}/${covariance} "
 command+="--reference-pareto ${path}/pareto/pareto.txt "
 command+="--reference-point ${path}/pareto/point.txt "
 j=0;
@@ -207,25 +150,8 @@ for solver in ${solvers[@]}; do
     j=$((j+1))
   done
 done
-if [ $i -lt $num_processes ]; then
-  commands[$i]+="$command"
-else
-  commands[$((i%num_processes))]+=" && $command"
-fi
-i=$((i+1))
 
-for ((i=0;i<num_processes;i++)); do
-    commands[$i]+=") &>> ${path}/log_${i}.txt"
-done
-
-final_command=""
-
-for ((i=0;i<num_processes;i++)); do
-    command=${commands[$i]}
-    final_command+="$command & "
-done
-
-eval $final_command
+eval $command
 
 wait
 

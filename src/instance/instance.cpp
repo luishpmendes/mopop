@@ -28,7 +28,7 @@ void Instance::load_instance(const std::string &expected_returns_filename,
   std::string line;
 
   if (!expected_returns_file.is_open()) {
-    throw std::runtime_error("Unable to open returns file");
+    throw std::runtime_error("Unable to open expected returns file");
   }
 
   std::getline(expected_returns_file, line);
