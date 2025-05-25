@@ -7,7 +7,8 @@ from plotter_definitions import *
 
 dirname = os.path.dirname(__file__)
 
-metrics_labels = ["Hypervolume Ratio", "Modified Inverted Generational Distance"]
+metrics_labels = ["Hypervolume Ratio",
+                  "Modified Inverted Generational Distance"]
 
 metrics_per_snapshot = [[], []]
 
@@ -20,7 +21,8 @@ for i in range(num_snapshots):
 
 for i in range(len(solvers)):
   for seed in seeds:
-    filename = os.path.join(dirname, "hypervolume_snapshots/" + solvers[i] + "_" + str(seed) + ".txt")
+    filename = os.path.join(
+        dirname, "hypervolume_snapshots/" + solvers[i] + "_" + str(seed) + ".txt")
     if os.path.exists(filename):
       with open(filename) as csv_file:
         data = csv.reader(csv_file, delimiter=",")
@@ -32,7 +34,8 @@ for i in range(len(solvers)):
 
 for i in range(len(solvers)):
   for seed in seeds:
-    filename = os.path.join(dirname, "igd_plus_snapshots/" + solvers[i] + "_" + str(seed) + ".txt")
+    filename = os.path.join(
+        dirname, "igd_plus_snapshots/" + solvers[i] + "_" + str(seed) + ".txt")
     if os.path.exists(filename):
       with open(filename) as csv_file:
         data = csv.reader(csv_file, delimiter=",")
@@ -54,9 +57,8 @@ for snapshot in range(num_snapshots):
                   [j], palette=colors, orient="h", size=2, zorder=0)
     sns.boxplot(data=metrics_per_snapshot[j][snapshot], ax=axs[0][j], orient="h", width=0.20, color="black", zorder=10, showcaps=True, boxprops={
                 'facecolor': 'none', "zorder": 10}, showfliers=True, whiskerprops={'linewidth': 2, "zorder": 10}, flierprops={'markersize': 2})
-    # axs[0][j].set_xlim(left = 0.0, right = 1.0)
-    axs[0][j].set_xticks(ticks=[0.0, 0.1, 0.2, 0.3, 0.4,
-                         0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
+    axs[0][j].set_xticks(ticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], labels=[
+                         0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
     axs[0][j].set_yticks(ticks=list(range(len(solvers))), labels=[
                          solver_labels[solver] for solver in solvers], fontsize="x-large")
   filename = os.path.join(
@@ -73,9 +75,8 @@ for snapshot in range(num_snapshots):
     for j in range(len(metrics_per_snapshot)):
       axs[j][j].set_xlabel(xlabel=metrics_labels[j], fontsize="xx-large")
       axs[j][j].set_ylabel(ylabel="Density", fontsize="xx-large")
-      # axs[j][j].set_xlim(left = 0.0, right = 1.0)
-      axs[j][j].set_xticks(ticks=[0.0, 0.1, 0.2, 0.3, 0.4,
-                           0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
+      axs[j][j].set_xticks(ticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], labels=[
+                           0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
       axs[j][j].set_yticks([])
       sns.kdeplot(data=metrics_per_snapshot[j][snapshot][i], ax=axs[j][j],
                   color=colors[i], label=solver_labels[solvers[i]], marker=(i + 3, 2, 0), cut=0)
@@ -84,12 +85,10 @@ for snapshot in range(num_snapshots):
         if j != k:
           axs[j][k].set_xlabel(xlabel=metrics_labels[k], fontsize="xx-large")
           axs[j][k].set_ylabel(ylabel=metrics_labels[j], fontsize="xx-large")
-          # axs[j][k].set_xlim(left = 0.0, right = 1.0)
-          # axs[j][k].set_ylim(bottom = 0.0, top = 1.0)
-          axs[j][k].set_xticks(
-              ticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
-          axs[j][k].set_yticks(
-              ticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
+          axs[j][k].set_xticks(ticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], labels=[
+                               0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
+          axs[j][k].set_yticks(ticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], labels=[
+                               0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], fontsize="x-large")
           axs[j][k].scatter(x=metrics_per_snapshot[k][snapshot][i], y=metrics_per_snapshot[j][snapshot]
                             [i], color=colors[i], label=solver_labels[solvers[i]], marker=(i + 3, 2, 0), alpha=0.60)
           axs[j][k].legend(loc="best", fontsize="x-large")
