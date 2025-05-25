@@ -1,7 +1,7 @@
 #!/bin/bash
 
-expected_returns="input/expected_returns_train.txt"
-covariance="input/covariance_matrix_train.txt"
+expected_returns="input/expected_returns_train.csv"
+covariance="input/covariance_matrix_train.csv"
 solvers=(nsga2 nspso moead mhaco ihs nsbrkga)
 seeds=(305089489 511812191 608055156)
 versions=(best median)
