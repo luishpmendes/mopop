@@ -7,13 +7,10 @@
 
 int main(int argc, char* argv[]) {
   Argument_Parser arg_parser(argc, argv);
-  std::vector<double> hypervolume_values, igd_plus_values,
-      multiplicative_epsilon_values;
+  std::vector<double> hypervolume_values, igd_plus_values;
 
-  unsigned num_hypervolumes, index_best, index_median, num_igd_pluses,
-      num_multiplicative_epsilons;
-  std::vector<std::pair<double, unsigned>> hypervolumes, igd_pluses,
-      multiplicative_epsilons;
+  unsigned num_hypervolumes, index_best, index_median, num_igd_pluses;
+  std::vector<std::pair<double, unsigned>> hypervolumes, igd_pluses;
 
   for (num_hypervolumes = 0; arg_parser.option_exists(
            "--hypervolume-" + std::to_string(num_hypervolumes));
@@ -25,14 +22,8 @@ int main(int argc, char* argv[]) {
        num_igd_pluses++) {
   }
 
-  for (num_multiplicative_epsilons = 0; arg_parser.option_exists(
-           "--igd-plus-" + std::to_string(num_multiplicative_epsilons));
-       num_multiplicative_epsilons++) {
-  }
-
   hypervolumes.resize(num_hypervolumes);
   igd_pluses.resize(num_igd_pluses);
-  multiplicative_epsilons.resize(num_multiplicative_epsilons);
 
   for (unsigned i = 0; i < num_hypervolumes; i++) {
     std::ifstream ifs;
@@ -53,7 +44,7 @@ int main(int argc, char* argv[]) {
       hypervolume_values.push_back(hypervolumes[i].first);
     } else {
       throw std::runtime_error(
-          "File " +
+          "A File " +
           arg_parser.option_value("--hypervolume-" + std::to_string(i)) +
           " not found.");
     }
@@ -77,35 +68,7 @@ int main(int argc, char* argv[]) {
       igd_plus_values.push_back(igd_pluses[i].first);
     } else {
       throw std::runtime_error(
-          "File " + arg_parser.option_value("--igd-plus-" + std::to_string(i)) +
-          " not found.");
-    }
-  }
-
-  for (unsigned i = 0; i < num_multiplicative_epsilons; i++) {
-    std::ifstream ifs;
-    ifs.open(arg_parser.option_value("--multiplicative-epsilon-" +
-                                     std::to_string(i)));
-
-    if (ifs.is_open()) {
-      ifs >> multiplicative_epsilons[i].first;
-
-      if (ifs.eof() || ifs.fail() || ifs.bad()) {
-        throw std::runtime_error(
-            "Error reading file " +
-            arg_parser.option_value("--multiplicative-epsilon-" +
-                                    std::to_string(i)) +
-            ".");
-      }
-
-      multiplicative_epsilons[i].second = i;
-      ifs.close();
-      multiplicative_epsilon_values.push_back(multiplicative_epsilons[i].first);
-    } else {
-      throw std::runtime_error(
-          "File " +
-          arg_parser.option_value("--multiplicative-epsilon-" +
-                                  std::to_string(i)) +
+          "B File " + arg_parser.option_value("--igd-plus-" + std::to_string(i)) +
           " not found.");
     }
   }
@@ -152,30 +115,6 @@ int main(int argc, char* argv[]) {
     } else {
       throw std::runtime_error(
           "File " + arg_parser.option_value("--igd-pluses") + " not created.");
-    }
-  }
-
-  if (arg_parser.option_exists("--multiplicative-epsilons")) {
-    std::ofstream ofs;
-    ofs.open(arg_parser.option_value("--multiplicative-epsilons"));
-
-    if (ofs.is_open()) {
-      for (const std::pair<double, unsigned>& multiplicative_epsilon :
-           multiplicative_epsilons) {
-        ofs << multiplicative_epsilon.first << std::endl;
-
-        if (ofs.eof() || ofs.fail() || ofs.bad()) {
-          throw std::runtime_error(
-              "Error writing file " +
-              arg_parser.option_value("--multiplicative-epsilons") + ".");
-        }
-      }
-
-      ofs.close();
-    } else {
-      throw std::runtime_error(
-          "File " + arg_parser.option_value("--multiplicative_epsilons") +
-          " not created.");
     }
   }
 
@@ -246,45 +185,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (arg_parser.option_exists("--multiplicative-epsilon-statistics")) {
-    std::ofstream ofs;
-    ofs.open(arg_parser.option_value("--multiplicative-epsilon-statistics"));
-
-    if (ofs.is_open()) {
-      double multiplicative_epsilon_mean =
-          std::accumulate(multiplicative_epsilon_values.begin(),
-                          multiplicative_epsilon_values.end(), 0.0) /
-          multiplicative_epsilon_values.size();
-      double multiplicative_epsilon_var =
-          std::accumulate(
-              multiplicative_epsilon_values.begin(),
-              multiplicative_epsilon_values.end(), 0.0,
-              [multiplicative_epsilon_mean](double acc, double val) {
-                return acc + (val - multiplicative_epsilon_mean) *
-                                 (val - multiplicative_epsilon_mean);
-              }) /
-          multiplicative_epsilon_values.size();
-      double multiplicative_epsilon_std = std::sqrt(multiplicative_epsilon_var);
-
-      ofs << multiplicative_epsilon_mean << ", " << multiplicative_epsilon_std
-          << std::endl;
-
-      if (ofs.eof() || ofs.fail() || ofs.bad()) {
-        throw std::runtime_error(
-            "Error writing file " +
-            arg_parser.option_value("--multiplicative-epsilon-statistics") +
-            ".");
-      }
-
-      ofs.close();
-    } else {
-      throw std::runtime_error(
-          "File " +
-          arg_parser.option_value("--multiplicative-epsilon-statistics") +
-          " not created.");
-    }
-  }
-
   std::sort(hypervolumes.begin(), hypervolumes.end());
   index_best = hypervolumes.back().second;
   index_median = hypervolumes[hypervolumes.size() / 2].second;
@@ -319,7 +219,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "D File " +
           arg_parser.option_value("--statistics-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -358,7 +258,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "E File " +
           arg_parser.option_value("--statistics-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -394,7 +294,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "F File " +
           arg_parser.option_value("--pareto-" + std::to_string(index_best)) +
           " not found.");
     }
@@ -430,7 +330,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "G File " +
           arg_parser.option_value("--pareto-" + std::to_string(index_median)) +
           " not found.");
     }
@@ -468,7 +368,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "H File " +
           arg_parser.option_value("--hypervolume-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -508,7 +408,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "I File " +
           arg_parser.option_value("--hypervolume-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -637,7 +537,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "J File " +
           arg_parser.option_value("--num-non-dominated-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -678,7 +578,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "K File " +
           arg_parser.option_value("--num-non-dominated-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -718,7 +618,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "L File " +
           arg_parser.option_value("--num-fronts-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -757,7 +657,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "M File " +
           arg_parser.option_value("--num-fronts-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -884,7 +784,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "N File " +
           arg_parser.option_value("--num-elites-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -923,7 +823,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "O File " +
           arg_parser.option_value("--num-elites-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -962,7 +862,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "P File " +
           arg_parser.option_value("--num-mutants-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -995,7 +895,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "File " +
+          "Q File " +
           arg_parser.option_value("--num-mutants-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");

@@ -20,11 +20,7 @@ int main(int argc, char* argv[]) {
     unsigned num_solvers, max_num_solutions = 800;
 
     for (unsigned i = 0; i < 4; i++) {
-      if (instance.senses[i] == NSBRKGA::Sense::MINIMIZE) {
-        reference_point.push_back(std::numeric_limits<double>::lowest());
-      } else {
-        reference_point.push_back(std::numeric_limits<double>::max());
-      }
+      reference_point.push_back(std::numeric_limits<double>::lowest());
     }
 
     if (arg_parser.option_exists("--max-num-solutions")) {
@@ -57,14 +53,8 @@ int main(int argc, char* argv[]) {
             for (unsigned j = 0; j < 4; j++) {
               iss >> value[j];
 
-              if (instance.senses[j] == NSBRKGA::Sense::MINIMIZE) {
-                if (value[j] < reference_point[j]) {
-                  reference_point[j] = value[j];
-                }
-              } else {
-                if (value[j] > reference_point[j]) {
-                  reference_point[j] = value[j];
-                }
+              if (reference_point[j] < value[j]) {
+                reference_point[j] = value[j];
               }
             }
 
@@ -111,14 +101,8 @@ int main(int argc, char* argv[]) {
               for (unsigned j = 0; j < 4; j++) {
                 iss >> value[j];
 
-                if (instance.senses[j] == NSBRKGA::Sense::MINIMIZE) {
-                  if (value[j] < reference_point[j]) {
-                    reference_point[j] = value[j];
-                  }
-                } else {
-                  if (value[j] > reference_point[j]) {
-                    reference_point[j] = value[j];
-                  }
+                if (reference_point[j] < value[j]) {
+                  reference_point[j] = value[j];
                 }
               }
 
@@ -134,6 +118,17 @@ int main(int argc, char* argv[]) {
           } else {
             break;
           }
+        }
+      }
+    }
+
+    // Improve the value of each objective function by 5%.
+    for(std::pair<std::vector<double>, std::vector<double>> & solution : reference_pareto) {
+      for (unsigned i = 0; i < solution.first.size(); i++) {
+        if (instance.senses[i] == NSBRKGA::Sense::MINIMIZE) {
+          solution.first[i] *= 0.95; // Decrease by 5% for minimization
+        } else {
+          solution.first[i] *= 1.05; // Increase by 5% for maximization
         }
       }
     }

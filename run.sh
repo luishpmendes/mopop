@@ -6,9 +6,9 @@ solvers=(nsga2 nspso moead mhaco ihs nsbrkga)
 seeds=(305089489 511812191 608055156)
 versions=(best median)
 
-num_processes=8
+num_processes=6
 
-time_limit=10
+time_limit=25
 max_num_solutions=500
 max_num_snapshots=10
 max_ref_solutions=800
@@ -27,8 +27,6 @@ mkdir -p ${path}/hypervolume
 mkdir -p ${path}/hypervolume_snapshots
 mkdir -p ${path}/igd_plus
 mkdir -p ${path}/igd_plus_snapshots
-mkdir -p ${path}/multiplicative_epsilon
-mkdir -p ${path}/multiplicative_epsilon_snapshots
 mkdir -p ${path}/metrics
 mkdir -p ${path}/metrics_snapshots
 
@@ -66,7 +64,7 @@ for solver in ${solvers[@]}; do
         command+="--memory "
     fi
     if [ $solver = "nsbrkga" ]; then
-        command+="--num-elites-snapshots ${path}/num_elites_snapshots/${instance}_${solver}_${seed}.txt "
+        command+="--num-elites-snapshots ${path}/num_elites_snapshots/${solver}_${seed}.txt "
     fi
     if [ $i -lt $num_processes ]; then
         commands[$i]+="$command"
@@ -91,8 +89,6 @@ done
 eval $final_command
 
 wait
-
-echo "Solvers finished..."
 
 solvers=(nsga2 nspso moead mhaco ihs nsbrkga)
 
@@ -169,8 +165,6 @@ for solver in ${solvers[@]}; do
   command+="--hypervolume-statistics ${path}/hypervolume/${solver}_stats.txt "
   command+="--igd-pluses ${path}/igd_plus/${solver}.txt "
   command+="--igd-pluses-statistics ${path}/igd_plus/${solver}_stats.txt "
-  command+="--multiplicative-epsilons ${path}/multiplicative_epsilon/${solver}.txt "
-  command+="--multiplicative-epsilons-statistics ${path}/multiplicative_epsilon/${solver}_stats.txt "
   command+="--statistics-best ${path}/statistics/${solver}_best.txt "
   command+="--statistics-median ${path}/statistics/${solver}_median.txt "
   command+="--pareto-best ${path}/pareto/${solver}_best.txt "
@@ -197,8 +191,6 @@ for solver in ${solvers[@]}; do
     command+="--hypervolume-snapshots-${j} ${path}/hypervolume_snapshots/${solver}_${seed}.txt "
     command+="--igd-plus-${j} ${path}/igd_plus/${solver}_${seed}.txt "
     command+="--igd-plus-snapshots-${j} ${path}/igd_plus_snapshots/${solver}_${seed}.txt "
-    command+="--multiplicative-epsilon-${j} ${path}/multiplicative_epsilon/${solver}_${seed}.txt "
-    command+="--multiplicative-epsilon-snapshots-${j} ${path}/multiplicative_epsilon_snapshots/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
     command+="--num-non-dominated-snapshots-${j} ${path}/num_non_dominated_snapshots/${solver}_${seed}.txt "
     command+="--populations-snapshots-${j} ${path}/populations_snapshots/${solver}_${seed}_ "

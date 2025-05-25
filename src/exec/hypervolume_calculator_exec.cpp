@@ -31,7 +31,7 @@ static inline double compute_hypervolume(
   }
 
   pagmo::hypervolume hv(front_prime);
-  return hv.compute(reference_point_prime);
+  return hv.compute(reference_point);
 }
 
 static inline double compute_hypervolume_ratio(
@@ -102,6 +102,8 @@ int main(int argc, char* argv[]) {
                                arg_parser.option_value("--reference-pareto") +
                                " not found.");
     }
+
+    std::cout << "Computing reference hypervolume..." << std::endl;
 
     reference_hypervolume =
         compute_hypervolume(instance.senses, reference_point, reference_pareto);
