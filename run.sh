@@ -34,17 +34,14 @@ mkdir -p ${path}/metrics_snapshots
 
 commands=()
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   commands[$i]="("
 done
 
 i=0
 
-for solver in ${solvers[@]}
-do
-  for seed in ${seeds[@]}
-  do
+for solver in ${solvers[@]}; do
+  for seed in ${seeds[@]}; do
     command="${path}/bin/exec/${solver}_solver_exec "
     command+="--expected-returns-filename ${expected_returns} "
     command+="--covariance-filename ${covariance} "
@@ -59,24 +56,19 @@ do
     command+="--num-non-dominated-snapshots ${path}/num_non_dominated_snapshots/${solver}_${seed}.txt "
     command+="--num-fronts-snapshots ${path}/num_fronts_snapshots/${solver}_${seed}.txt "
     command+="--populations-snapshots ${path}/populations_snapshots/${solver}_${seed}_ "
-    if [ $solver = "nspso" ]
-    then
+    if [ $solver = "nspso" ]; then
         command+="--memory "
     fi
-    if [ $solver = "moead" ]
-    then
+    if [ $solver = "moead" ]; then
         command+="--preserve-diversity "
     fi
-    if [ $solver = "mhaco" ]
-    then
+    if [ $solver = "mhaco" ]; then
         command+="--memory "
     fi
-    if [ $solver = "nsbrkga" ]
-    then
+    if [ $solver = "nsbrkga" ]; then
         command+="--num-elites-snapshots ${path}/num_elites_snapshots/${instance}_${solver}_${seed}.txt "
     fi
-    if [ $i -lt $num_processes ]
-    then
+    if [ $i -lt $num_processes ]; then
         commands[$i]+="$command"
     else
         commands[$((i%num_processes))]+=" && $command"
@@ -85,15 +77,13 @@ do
   done
 done
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   commands[$i]+=") &> ${path}/log_${i}.txt"
 done
 
 final_command=""
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   command=${commands[$i]}
   final_command+="$command & "
 done
@@ -106,30 +96,27 @@ solvers=(nsga2 nspso moead mhaco ihs nsbrkga)
 
 commands=()
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   commands[$i]="("
 done
 
 i=0
 
-command="${path}/bin/exec/reference_pareto_front_calculator_exec "
+command="${path}/bin/exec/reference_pareto_front_and_point_calculator_exec "
 command+="--expected-returns-filename ${expected_returns} "
 command+="--covariance-filename ${covariance} "
 command+="--max-num-solutions ${max_ref_solutions} "
 j=0;
-for solver in ${solvers[@]}
-do
-  for seed in ${seeds[@]}
-  do
+for solver in ${solvers[@]}; do
+  for seed in ${seeds[@]}; do
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
     command+="--reference-pareto ${path}/pareto/pareto.txt "
+    command+="--reference-point ${path}/pareto/point.txt "
     j=$((j+1))
   done
 done
-if [ $i -lt $num_processes ]
-then
+if [ $i -lt $num_processes ]; then
   commands[$i]+="$command"
 else
   commands[$((i%num_processes))]+=" && $command"
@@ -137,15 +124,13 @@ fi
 i=$((i+1))
 
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   commands[$i]+=") &>> ${path}/log_${i}.txt"
 done
 
 final_command=""
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   command=${commands[$i]}
   final_command+="$command & "
 done
@@ -156,8 +141,7 @@ wait
 
 commands=()
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   commands[$i]="("
 done
 
@@ -167,11 +151,10 @@ command="${path}/bin/exec/hypervolume_calculator_exec "
 command+="--expected-returns-filename ${expected_returns} "
 command+="--covariance-filename ${covariance} "
 command+="--reference-pareto ${path}/pareto/pareto.txt "
+command+="--reference-point ${path}/pareto/point.txt "
 j=0;
-for solver in ${solvers[@]}
-do
-  for seed in ${seeds[@]}
-  do
+for solver in ${solvers[@]}; do
+  for seed in ${seeds[@]}; do
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
     command+="--hypervolume-${j} ${path}/hypervolume/${solver}_${seed}.txt "
@@ -179,23 +162,20 @@ do
     j=$((j+1))
   done
 done
-if [ $i -lt $num_processes ]
-then
+if [ $i -lt $num_processes ]; then
     commands[$i]+="$command"
 else
     commands[$((i%num_processes))]+=" && $command"
 fi
 i=$((i+1))
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
     commands[$i]+=") &>> ${path}/log_${i}.txt"
 done
 
 final_command=""
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
     command=${commands[$i]}
     final_command+="$command & "
 done
@@ -206,8 +186,7 @@ wait
 
 commands=()
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
     commands[$i]="("
 done
 
@@ -217,11 +196,10 @@ command="${path}/bin/exec/modified_generational_distance_calculator_exec "
 command+="--expected-returns-filename ${expected_returns} "
 command+="--covariance-filename ${covariance} "
 command+="--reference-pareto ${path}/pareto/pareto.txt "
+command+="--reference-point ${path}/pareto/point.txt "
 j=0;
-for solver in ${solvers[@]}
-do
-  for seed in ${seeds[@]}
-  do
+for solver in ${solvers[@]}; do
+  for seed in ${seeds[@]}; do
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
     command+="--igd-plus-${j} ${path}/igd_plus/${solver}_${seed}.txt "
@@ -229,23 +207,20 @@ do
     j=$((j+1))
   done
 done
-if [ $i -lt $num_processes ]
-then
+if [ $i -lt $num_processes ]; then
   commands[$i]+="$command"
 else
   commands[$((i%num_processes))]+=" && $command"
 fi
 i=$((i+1))
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
     commands[$i]+=") &>> ${path}/log_${i}.txt"
 done
 
 final_command=""
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
     command=${commands[$i]}
     final_command+="$command & "
 done
@@ -256,15 +231,13 @@ wait
 
 commands=()
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
     commands[$i]="("
 done
 
 i=0
 
-for solver in ${solvers[@]}
-do
+for solver in ${solvers[@]}; do
   command="${path}/bin/exec/results_aggregator_exec "
   command+="--hypervolumes ${path}/hypervolume/${solver}.txt "
   command+="--hypervolume-statistics ${path}/hypervolume/${solver}_stats.txt "
@@ -286,14 +259,12 @@ do
   command+="--populations-snapshots-median ${path}/populations_snapshots/${solver}_median_ "
   command+="--num-fronts-snapshots-best ${path}/num_fronts_snapshots/${solver}_best.txt "
   command+="--num-fronts-snapshots-median ${path}/num_fronts_snapshots/${solver}_median.txt "
-  if [ $solver = "nsbrkga" ]
-  then
+  if [ $solver = "nsbrkga" ]; then
     command+="--num-elites-snapshots-best ${path}/num_elites_snapshots/${solver}_best.txt "
     command+="--num-elites-snapshots-median ${path}/num_elites_snapshots/${solver}_median.txt "
   fi
   j=0;
-  for seed in ${seeds[@]}
-  do
+  for seed in ${seeds[@]}; do
     command+="--statistics-${j} ${path}/statistics/${solver}_${seed}.txt "
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
     command+="--hypervolume-${j} ${path}/hypervolume/${solver}_${seed}.txt "
@@ -306,14 +277,12 @@ do
     command+="--num-non-dominated-snapshots-${j} ${path}/num_non_dominated_snapshots/${solver}_${seed}.txt "
     command+="--populations-snapshots-${j} ${path}/populations_snapshots/${solver}_${seed}_ "
     command+="--num-fronts-snapshots-${j} ${path}/num_fronts_snapshots/${solver}_${seed}.txt "
-    if [ $solver = "nsbrkga" ]
-    then
+    if [ $solver = "nsbrkga" ]; then
         command+="--num-elites-snapshots-${j} ${path}/num_elites_snapshots/${solver}_${seed}.txt "
     fi
     j=$((j+1))
   done
-  if [ $i -lt $num_processes ]
-  then
+  if [ $i -lt $num_processes ]; then
     commands[$i]+="$command"
   else
     commands[$((i%num_processes))]+=" && $command"
@@ -321,15 +290,13 @@ do
   i=$((i+1))
 done
 
-for ((i=0;i<num_processes;i++))
-do
+for ((i=0;i<num_processes;i++)); do
   commands[$i]+=") &>> ${path}/log_${i}.txt"
 done
 
 final_command=""
 
-for ((i=0;i<num_processes;i++))
-do 
+for ((i=0;i<num_processes;i++)); do 
   command=${commands[$i]}
   final_command+="$command & "
 done
@@ -353,8 +320,7 @@ python3 ${path}/plotter_populations_snapshots.py
 
 wait
 
-for version in ${versions[@]}
-do
+for version in ${versions[@]}; do
   ffmpeg -y -r 5 -i ${path}/best_solutions_snapshots/${version}_%d.png -c:v libx264 -vf fps=60 -pix_fmt yuv420p ${path}/best_solutions_snapshots/${version}.mp4 &
   ffmpeg -y -r 5 -i ${path}/populations_snapshots/${version}_%d.png -c:v libx264 -vf fps=60 -pix_fmt yuv420p ${path}/populations_snapshots/${version}.mp4
 

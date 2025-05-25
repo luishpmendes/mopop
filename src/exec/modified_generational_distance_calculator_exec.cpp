@@ -281,6 +281,7 @@ int main(int argc, char* argv[]) {
         << "./modified_inverted_generational_distance_exec "
         << "--instance <instance_filename> "
         << "--reference-pareto <reference_pareto_filename> "
+        << "--reference-point <reference_point_filename> "
         << "--pareto-i <pareto_filename> "
         << "--best-solutions-snapshots-i <best_solutions_snapshots_filename> "
         << "--igd-plus-i <modified_inverted_generational_distance_filename> "

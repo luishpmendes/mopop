@@ -264,6 +264,7 @@ int main(int argc, char* argv[]) {
         << "--expected-returns-filename <expected_returns_filename> "
         << "--covariance-filename <covariance_filename> "
         << "--reference-pareto <reference_pareto_filename> "
+        << "--reference-point <reference_point_filename> "
         << "--pareto-i <pareto_filename> "
         << "--best-solutions-snapshots-i <best_solutions_snapshots_filename> "
         << "--hypervolume-i <hypervolume_filename> "
