@@ -294,7 +294,8 @@ int main(int argc, char* argv[]) {
   } else {
     std::cerr
         << "./moead_solver_exec "
-        << "--instance <instance_filename> "
+        << "--expected-returns-filename <expected_returns_filename> "
+        << "--covariance-filename <covariance_filename> "
         << "--seed <seed> "
         << "--time-limit <time_limit> "
         << "--iterations-limit <iterations_limit> "
