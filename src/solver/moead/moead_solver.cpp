@@ -29,13 +29,7 @@ void MOEAD_Solver::solve() {
       1, this->weight_generation, this->decomposition, this->neighbours,
       this->cr, this->f, this->eta_m, this->realb, this->limit,
       this->preserve_diversity, this->seed)};
-  pagmo::population pop{
-      prob, this->population_size - this->initial_individuals.size(),
-      this->seed};
-
-  for (const auto &individual : this->initial_individuals) {
-    pop.push_back(individual.second, individual.first);
-  }
+  pagmo::population pop{prob, this->population_size, this->seed};
 
   this->update_best_individuals(pop);
 

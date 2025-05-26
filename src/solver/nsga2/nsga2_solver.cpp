@@ -28,13 +28,7 @@ void NSGA2_Solver::solve() {
   pagmo::algorithm algo{pagmo::nsga2(
       1, this->crossover_probability, this->crossover_distribution,
       this->mutation_probability, this->mutation_distribution, this->seed)};
-  pagmo::population pop{
-      prob, this->population_size - this->initial_individuals.size(),
-      this->seed};
-
-  for (const auto &individual : this->initial_individuals) {
-    pop.push_back(individual.second, individual.first);
-  }
+  pagmo::population pop{prob, this->population_size, this->seed};
 
   this->update_best_individuals(pop);
 

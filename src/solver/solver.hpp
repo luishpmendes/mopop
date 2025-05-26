@@ -43,12 +43,6 @@ class Solver {
   unsigned max_num_snapshots = 0;
 
   /**
-   * @brief The initial individuals.
-   */
-  std::vector<std::pair<std::vector<double>, std::vector<double>>>
-      initial_individuals = {};
-
-  /**
    * @brief The number of iterations executed.
    */
   unsigned num_iterations = 0;

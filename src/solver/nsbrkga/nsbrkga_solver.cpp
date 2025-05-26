@@ -99,9 +99,6 @@ void NSBRKGA_Solver::solve() {
                              this->instance.num_assets, params,
                              this->num_threads);
 
-  std::vector<std::vector<NSBRKGA::Chromosome>> initial_populations(
-      this->num_populations);
-
   algorithm.initialize();
 
   this->update_best_individuals(algorithm.getIncumbentSolutions());

@@ -29,13 +29,7 @@ void MHACO_Solver::solve() {
                                     this->n_gen_mark, this->eval_stop,
                                     this->focus, this->memory, this->seed)};
 
-  pagmo::population pop{
-      prob, this->population_size - this->initial_individuals.size(),
-      this->seed};
-
-  for (const auto &individual : this->initial_individuals) {
-    pop.push_back(individual.second, individual.first);
-  }
+  pagmo::population pop{prob, this->population_size, this->seed};
 
   this->update_best_individuals(pop);
 

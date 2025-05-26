@@ -260,8 +260,6 @@ std::ostream& operator<<(std::ostream& os, const Solver& solver) {
      << "Seed: " << solver.seed << std::endl
      << "Time limit: " << solver.time_limit << std::endl
      << "Iterations limit: " << solver.iterations_limit << std::endl
-     << "Initial individuals: " << solver.initial_individuals.size()
-     << std::endl
      << "Maximum number of solutions: " << solver.max_num_solutions << std::endl
      << "Maximum number of snapshots: " << solver.max_num_snapshots << std::endl
      << "Factor at which the time between snapshots are increased: "
