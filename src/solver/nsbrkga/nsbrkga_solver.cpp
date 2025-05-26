@@ -120,6 +120,7 @@ void NSBRKGA_Solver::solve() {
     initial_populations[i].push_back(x);
   }
 
+  algorithm.setInitialPopulations(initial_populations);
   algorithm.initialize();
 
   this->update_best_individuals(algorithm.getIncumbentSolutions());
