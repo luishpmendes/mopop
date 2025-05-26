@@ -28,7 +28,27 @@ void NSGA2_Solver::solve() {
   pagmo::algorithm algo{pagmo::nsga2(
       1, this->crossover_probability, this->crossover_distribution,
       this->mutation_probability, this->mutation_distribution, this->seed)};
-  pagmo::population pop{prob, this->population_size, this->seed};
+  pagmo::population pop{
+      prob, this->population_size - (2 * this->instance.num_assets + 1),
+      this->seed};
+
+  for (unsigned i = 0; i < this->instance.num_assets; i++) {
+    std::vector<double> x(this->instance.num_assets, 0.0);
+    x[i] = ((double)this->instance.num_assets) /
+           ((double)this->instance.num_assets + 1.0);
+    pop.push_back(x);
+  }
+
+  for (unsigned i = 0; i < this->instance.num_assets; i++) {
+    std::vector<double> x(this->instance.num_assets,
+                          1.0 / ((double)this->instance.num_assets + 1.0));
+    x[i] = 0.0;
+    pop.push_back(x);
+  }
+
+  std::vector<double> x(this->instance.num_assets,
+                        1.0 / ((double)this->instance.num_assets));
+  pop.push_back(x);
 
   this->update_best_individuals(pop);
 
