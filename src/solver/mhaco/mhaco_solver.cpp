@@ -24,12 +24,30 @@ MHACO_Solver::MHACO_Solver() = default;
 void MHACO_Solver::solve() {
   this->start_time = std::chrono::steady_clock::now();
 
+  std::vector<unsigned> positive_expected_returns_indexes(
+      this->instance.num_assets);
+
+  for (unsigned i = 0; i < this->instance.num_assets; i++) {
+    if (this->instance.expected_returns[i] > 0.0) {
+      positive_expected_returns_indexes.push_back(i);
+    }
+  }
+
+  std::sort(positive_expected_returns_indexes.begin(),
+            positive_expected_returns_indexes.end(),
+            [&](unsigned a, unsigned b) {
+              return this->instance.expected_returns[a] >
+                     this->instance.expected_returns[b];
+            });
+
   pagmo::problem prob{Problem(this->instance)};
   pagmo::algorithm algo{pagmo::maco(1, this->ker, this->q, this->threshold,
                                     this->n_gen_mark, this->eval_stop,
                                     this->focus, this->memory, this->seed)};
   pagmo::population pop{
-      prob, this->population_size - (3 * this->instance.num_assets - 1),
+      prob,
+      this->population_size - (2 * this->instance.num_assets +
+                               positive_expected_returns_indexes.size() - 1),
       this->seed};
 
   for (unsigned i = 0; i < this->instance.num_assets; i++) {
@@ -52,16 +70,17 @@ void MHACO_Solver::solve() {
     pop.push_back(x);
   }
 
-  for (unsigned i = 2; i < this->instance.num_assets; i++) {
+  for (unsigned i = 2; i < positive_expected_returns_indexes.size(); i++) {
     std::vector<double> x(this->instance.num_assets, 0.0);
     double sum = 0.0;
 
     for (unsigned j = 0; j < i; j++) {
-      x[j] = this->instance.expected_returns[j];
-      sum += x[j];
+      unsigned k = positive_expected_returns_indexes[j];
+      x[k] = this->instance.expected_returns[k];
+      sum += x[k];
     }
 
-    for (unsigned j = 0; j < i; j++) {
+    for (unsigned j = 0; j < this->instance.num_assets; j++) {
       x[j] /= sum;
     }
 
