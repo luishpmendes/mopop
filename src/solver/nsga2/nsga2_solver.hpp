@@ -13,7 +13,7 @@ class NSGA2_Solver : public Solver {
   /**
    * @brief The size of the population.
    */
-  unsigned population_size = 300;
+  unsigned population_size = 500;
 
   /**
    * @brief The crossover probability.

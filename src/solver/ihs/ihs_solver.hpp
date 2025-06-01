@@ -5,14 +5,15 @@
 namespace mopop {
 /**
  * @class IHS_Solver
- * @brief The IHS_Solver represents a solver for the Multi-Objective Portfolio Optimization Problem using the Improved Harmony Search.
+ * @brief The IHS_Solver represents a solver for the Multi-Objective Portfolio
+ * Optimization Problem using the Improved Harmony Search.
  */
 class IHS_Solver : public Solver {
  public:
   /**
    * @brief The size of the population.
    */
-  unsigned population_size = 300;
+  unsigned population_size = 500;
 
   /**
    * @brief The probability of choosing from memory.

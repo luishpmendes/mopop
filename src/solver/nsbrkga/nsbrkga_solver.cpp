@@ -109,15 +109,35 @@ void NSBRKGA_Solver::solve() {
              ((double)this->instance.num_assets + 1.0);
       initial_populations[i].push_back(x);
     }
+
     for (unsigned j = 0; j < this->instance.num_assets; j++) {
       std::vector<double> x(this->instance.num_assets,
                             1.0 / ((double)this->instance.num_assets + 1.0));
       x[j] = 0.0;
       initial_populations[i].push_back(x);
     }
-    std::vector<double> x(this->instance.num_assets,
-                          1.0 / ((double)this->instance.num_assets));
-    initial_populations[i].push_back(x);
+
+    {
+      std::vector<double> x(this->instance.num_assets,
+                            1.0 / ((double)this->instance.num_assets));
+      initial_populations[i].push_back(x);
+    }
+
+    for (unsigned j = 2; j < this->instance.num_assets; j++) {
+      std::vector<double> x(this->instance.num_assets, 0.0);
+      double sum = 0.0;
+
+      for (unsigned k = 0; k < j; k++) {
+        x[k] = this->instance.expected_returns[k];
+        sum += x[k];
+      }
+
+      for (unsigned k = 0; k < j; k++) {
+        x[k] /= sum;
+      }
+
+      initial_populations[i].push_back(x);
+    }
   }
 
   algorithm.setInitialPopulations(initial_populations);

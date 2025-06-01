@@ -30,7 +30,7 @@ void NSPSO_Solver::solve() {
                    this->leader_selection_range, this->diversity_mechanism,
                    this->memory, this->seed)};
   pagmo::population pop{
-      prob, this->population_size - (2 * this->instance.num_assets + 1),
+      prob, this->population_size - (3 * this->instance.num_assets - 1),
       this->seed};
 
   for (unsigned i = 0; i < this->instance.num_assets; i++) {
@@ -47,9 +47,27 @@ void NSPSO_Solver::solve() {
     pop.push_back(x);
   }
 
-  std::vector<double> x(this->instance.num_assets,
-                        1.0 / ((double)this->instance.num_assets));
-  pop.push_back(x);
+  {
+    std::vector<double> x(this->instance.num_assets,
+                          1.0 / ((double)this->instance.num_assets));
+    pop.push_back(x);
+  }
+
+  for (unsigned i = 2; i < this->instance.num_assets; i++) {
+    std::vector<double> x(this->instance.num_assets, 0.0);
+    double sum = 0.0;
+
+    for (unsigned j = 0; j < i; j++) {
+      x[j] = this->instance.expected_returns[j];
+      sum += x[j];
+    }
+
+    for (unsigned j = 0; j < i; j++) {
+      x[j] /= sum;
+    }
+
+    pop.push_back(x);
+  }
 
   this->update_best_individuals(pop);
 

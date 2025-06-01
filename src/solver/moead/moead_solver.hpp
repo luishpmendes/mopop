@@ -14,7 +14,7 @@ class MOEAD_Solver : public Solver {
   /**
    * @brief The size of the population.
    */
-  unsigned population_size = 300;
+  unsigned population_size = 500;
 
   /**
    * @brief The method used to generate the weights, one of “grid”, “low

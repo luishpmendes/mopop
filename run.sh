@@ -9,9 +9,9 @@ versions=(best median)
 num_processes=6
 
 time_limit=25
-max_num_solutions=500
+max_num_solutions=800
 max_num_snapshots=10
-max_ref_solutions=800
+max_ref_solutions=1300
 
 path=$(dirname $(realpath $0))
 
