@@ -67,11 +67,27 @@ Python plotters read `plotter_definitions.py` for the shared solver list, labels
 
 Two known inconsistencies in the current scripts: `run.sh` ends by invoking `metrics_stats.py`, which does not exist in this repo (it exists in the `motsp_irace` sibling project); and `plotter_definitions.py` names `input/*.txt` while the actual inputs are `input/*.csv`.
 
-`downloader.py` fetches adjusted closes from Yahoo Finance and writes `returns`, `expected_returns`, and `covariance_matrix` CSVs. Despite the docstrings and log messages saying "annualized", it computes **daily** mean and covariance — this is intentional; fix the wording, not the math.
+## Instance generation
+
+`scripts/generate_instances.py` builds the ten `ibov_*` instances. It replaced `downloader.py`, which was deleted. Two subcommands, and the split is load-bearing:
+
+- `fetch` — the **only** code path that touches the network. Downloads every ticker in `ibovespa_tickers_2011_2025/` over one span (`2010-12-01`–`2026-01-01`) into `cache/prices/{TICKER}.csv` plus `cache/manifest.json`.
+- `build` — reads the cache and nothing else; a missing ticker is an error, never an implicit download. `--allow-partial` is required in practice (see below).
+
+`cache/prices/` **is committed and must stay that way.** Yahoo re-adjusts its `auto_adjust` close series retroactively on every new corporate action, so a re-fetch returns different numbers; the cache is the only thing pinning the instances. `instances/` is gitignored — regenerate it offline with `build`.
+
+Statistics are **daily** (mean and covariance of daily returns), never annualized. This was BUG 4 in the plan.
+
+Manifest entries carry a `status` of `ok`, `no_data`, or `error`. `build` refuses to run while anything is `error`, since treating an unknown history as an empty one silently shrinks an instance without any visible failure. `fetch` also refuses to overwrite a non-empty cached series with an empty response. Use `fetch --mark-no-data <TICKER>…` to settle long-dead symbols that fail deterministically inside yfinance instead of returning empty.
+
+**Instances are 28–47 assets, not the 58–73 constituents.** Yahoo serves nothing for delisted, renamed, or merged symbols, so 65 of the 165 unique tickers are unavailable and each instance loses 20–32 names. Every asset present is therefore a survivor, and expected returns are biased upward; each `metadata.json` records this and the per-ticker drop causes. The ≥95%-plus-endpoints coverage rule accounts for at most 2 drops per instance — the rest is upstream availability.
 
 ## In-flight work
 
-`docs/implementation_plan.md` is the active plan: migrate from the single hardcoded instance to ten rolling IBOVESPA windows (`ibov_2011`–`ibov_2020`, tickers already committed under `ibovespa_tickers_2011_2025/`), 10 seeds, irace tuning, and multi-instance aggregation. **Phase 3 is done**: the three metric-exec bugs are fixed (untransformed reference point passed to pagmo; `max` used for maximization objectives, which also truncated IGD+ to 2 of 4 objectives; the sign-unsafe 5% front perturbation, replaced by a 5%-of-range padding on the reference *point*), the execs and flags are renamed to `hvr`/`nigd_plus`, and the raw HV exec for irace exists. `src/test/metrics_test.cpp` pins the formulas to analytic values — it duplicates the helpers from the exec files, so keep the two in sync. Still open: the "annualized" docstrings in `downloader.py` (Phase 2) and the `hypervolume/`→`hvr/` directory renames (Phase 4). **Read the plan before touching the metric executables or `run.sh`.**
+`docs/implementation_plan.md` is the active plan: migrate from the single hardcoded instance to ten rolling IBOVESPA windows (`ibov_2011`–`ibov_2020`, tickers already committed under `ibovespa_tickers_2011_2025/`), 10 seeds, irace tuning, and multi-instance aggregation. **Phase 3 is done**: the three metric-exec bugs are fixed (untransformed reference point passed to pagmo; `max` used for maximization objectives, which also truncated IGD+ to 2 of 4 objectives; the sign-unsafe 5% front perturbation, replaced by a 5%-of-range padding on the reference *point*), the execs and flags are renamed to `hvr`/`nigd_plus`, and the raw HV exec for irace exists. `src/test/metrics_test.cpp` pins the formulas to analytic values — it duplicates the helpers from the exec files, so keep the two in sync. **Phase 2 is done**: `scripts/generate_instances.py` and `scripts/validate_instances.py` exist, all ten instances build and validate, and a rebuild from the cache with the network namespace isolated is byte-identical. Still open: the `hypervolume/`→`hvr/` directory renames (Phase 4). **Read the plan before touching the metric executables or `run.sh`.**
+
+> [!WARNING]
+> **BUG 5 in the plan is open and compromises experiments.** The population initialization added in `6b6aa16`, present in all six `*_solver.cpp` files, sizes `positive_expected_returns_indexes` to `num_assets` and then `push_back`s onto it, so `num_assets` phantom entries all point at asset 0; it then uses raw expected returns as weights and divides by their sum, which can be negative. The result is chromosome entries outside `[0, 1]` that normalization cannot repair — portfolio variance above the largest single-asset variance and negative Shannon entropy. Reproduced on `ibov_2020`, where 66 of 100 archived NS-BRKGA solutions have negative entropy. `ibov_2011` is unaffected only because its first asset happens to have a positive mean. Fix before running Phase 4.
 
 The sibling project `/home/luishpmendes/UNICAMP/Doutorado/motsp_irace` (an additional working directory) is the reference implementation for the target structure — instance directories, irace scenarios/target runners, plotter naming, and `results_aggregator.py`. Prefer mirroring its patterns over inventing new ones.
 

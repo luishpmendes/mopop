@@ -1,0 +1,15 @@
+# Python environment for instance generation and plotting.
+#
+#   python3 -m venv venv && ./venv/bin/pip install -r requirements.txt
+#
+# Versions are pinned rather than bounded because scripts/generate_instances.py
+# fetch talks to Yahoo Finance through yfinance, and the shape of what that
+# returns is not stable across releases. The committed cache under cache/prices/
+# is what actually pins the instances; this pin keeps a re-fetch comparable.
+
+yfinance==0.2.61
+pandas==2.2.3
+numpy==1.26.4
+matplotlib==3.7.3
+seaborn==0.11.0
+scipy==1.15.3

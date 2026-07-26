@@ -1,0 +1,1662 @@
+{
+  "span": {
+    "end": "2026-01-01",
+    "start": "2010-12-01"
+  },
+  "tickers": {
+    "ABEV3.SA": {
+      "fetched_at": "2026-07-26T17:49:10-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "b9a71fe341b3a28ef02f1997c0cd3ec2528b300194d1b9a95186836d1993df67",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "AEDU3.SA": {
+      "fetched_at": "2026-07-26T17:49:11-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ALLL3.SA": {
+      "fetched_at": "2026-07-26T17:49:12-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ALOS3.SA": {
+      "fetched_at": "2026-07-26T17:49:14-0300",
+      "first_date": "2011-02-03",
+      "last_date": "2025-12-30",
+      "n_rows": 3705,
+      "sha256": "1f23c923f0fbe49a39b476d2217401b84c08ebbe151bfc6c85546f62915673aa",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ALPA4.SA": {
+      "fetched_at": "2026-07-26T17:49:15-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "682e8f7e479acabb545049101b7bdac734a4cfd716d2cbb4c072d14db9b4e6f3",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ALSO3.SA": {
+      "fetched_at": "2026-07-26T17:49:17-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "AMBV4.SA": {
+      "fetched_at": "2026-07-26T17:49:18-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "AMER3.SA": {
+      "fetched_at": "2026-07-26T17:49:20-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "8aa7a878422b6ad504c74ed92d339ff311d88adefa9be2c927d9bd3d0caf6be7",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "AMOB3.SA": {
+      "fetched_at": "2026-07-26T17:49:21-0300",
+      "first_date": "2024-12-16",
+      "last_date": "2025-12-30",
+      "n_rows": 259,
+      "sha256": "d033a9be10e0f024de139bdc6cbd21aad7d5877fcb880320073958a0be019b91",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ARZZ3.SA": {
+      "fetched_at": "2026-07-26T17:49:24-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ASAI3.SA": {
+      "fetched_at": "2026-07-26T17:49:25-0300",
+      "first_date": "2021-03-01",
+      "last_date": "2025-12-30",
+      "n_rows": 1209,
+      "sha256": "762f50627069520e18cc985527742e538a10a645d6632c4a7050d53faed572d9",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "AURE3.SA": {
+      "fetched_at": "2026-07-26T17:49:26-0300",
+      "first_date": "2022-03-28",
+      "last_date": "2025-12-30",
+      "n_rows": 941,
+      "sha256": "e368e73e10b29b786348eca5c92d7fbdd097c58ab75d5d60fbdcc5609745ffab",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "AZUL4.SA": {
+      "fetched_at": "2026-07-26T17:49:28-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "AZZA3.SA": {
+      "fetched_at": "2026-07-26T17:49:29-0300",
+      "first_date": "2011-02-02",
+      "last_date": "2025-12-30",
+      "n_rows": 3706,
+      "sha256": "604d5e801fcb7e5ff41dff860346aca537e947a379a9822075b1d048cee89092",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "B3SA3.SA": {
+      "fetched_at": "2026-07-26T17:49:31-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3746,
+      "sha256": "e90de18ba052f1f8b3310b586e4ef44d76cc0d6b74e732ec18260219e518f224",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BBAS3.SA": {
+      "fetched_at": "2026-07-26T17:49:33-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "36c51d0a45de0fbfea06143db576dd01401e2477204c9142eb35d51cf3aa7359",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BBDC3.SA": {
+      "fetched_at": "2026-07-26T17:49:34-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "a61015776ffa7e5cc41987c61c79b2409e49acb6f22ed4189255ccfddb90b466",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BBDC4.SA": {
+      "fetched_at": "2026-07-26T17:49:36-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "b84ff954837dd044785305062b5758c8296a34e103737ee66ea34352cde8aa23",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BBSE3.SA": {
+      "fetched_at": "2026-07-26T17:49:38-0300",
+      "first_date": "2013-04-29",
+      "last_date": "2025-12-30",
+      "n_rows": 3154,
+      "sha256": "4c4eac553a704d5d1b429ae900243449ea8bdbc39dbf0cb236ae997b814aa45d",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BEEF3.SA": {
+      "fetched_at": "2026-07-26T17:49:39-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "c74c81aa5955526668d7c4ca721d8367603f13c524e6672122244d4503b690bb",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BHIA3.SA": {
+      "fetched_at": "2026-07-26T17:49:41-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "0573cd86766accb9fe2162495186739ef56c0079933ebfe62585b695ce416c71",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BIDI11.SA": {
+      "fetched_at": "2026-07-26T17:49:43-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BISA3.SA": {
+      "fetched_at": "2026-07-26T17:49:44-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BPAC11.SA": {
+      "fetched_at": "2026-07-26T17:49:45-0300",
+      "first_date": "2017-02-24",
+      "last_date": "2025-12-30",
+      "n_rows": 2204,
+      "sha256": "c7534231d9992099fa5cc61ee6540d4fd6e47afdcd36245f982358ad2479f356",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BPAN4.SA": {
+      "fetched_at": "2026-07-26T17:49:47-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BRAP4.SA": {
+      "fetched_at": "2026-07-26T17:49:49-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "386a4334fdeba71266107a83eb00926519f36a5924ed6728af166932108bde18",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BRAV3.SA": {
+      "fetched_at": "2026-07-26T17:49:50-0300",
+      "first_date": "2020-11-12",
+      "last_date": "2025-12-30",
+      "n_rows": 1278,
+      "sha256": "65a1ef347a9a2555594f87ebf4147853c3634f40efb2e8ab152631198eb605e5",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BRDT3.SA": {
+      "fetched_at": "2026-07-26T17:49:52-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BRFS3.SA": {
+      "fetched_at": "2026-07-26T17:49:54-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BRKM5.SA": {
+      "fetched_at": "2026-07-26T17:49:55-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "a9518162d3835bb51283138f282cf9355fb058983929394e75daf57e058dcd1f",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BRML3.SA": {
+      "fetched_at": "2026-07-26T17:49:57-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BRPR3.SA": {
+      "fetched_at": "2026-07-26T17:49:59-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2024-08-06",
+      "n_rows": 3398,
+      "sha256": "acf386223e77fc4c24f5914bfbd49bbe83f0c3b58fca82cef2630e2ef3c4b383",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "BTOW3.SA": {
+      "fetched_at": "2026-07-26T17:50:00-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "BVMF3.SA": {
+      "fetched_at": "2026-07-26T17:50:02-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CASH3.SA": {
+      "fetched_at": "2026-07-26T17:50:03-0300",
+      "first_date": "2020-11-09",
+      "last_date": "2025-12-30",
+      "n_rows": 1281,
+      "sha256": "ac74183927f05110ca3c3dc566969f69c40ec22182a3a4cafb0b3fef370cad66",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CCRO3.SA": {
+      "fetched_at": "2026-07-26T17:50:05-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CESP6.SA": {
+      "fetched_at": "2026-07-26T17:50:06-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CIEL3.SA": {
+      "fetched_at": "2026-07-26T17:50:08-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CMIG4.SA": {
+      "fetched_at": "2026-07-26T17:50:10-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "e90f79fad7f0fe8643b2e93559ac655831ca316455ac9fbe86acc1ad831ac198",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CMIN3.SA": {
+      "fetched_at": "2026-07-26T17:50:11-0300",
+      "first_date": "2021-02-22",
+      "last_date": "2025-12-30",
+      "n_rows": 1214,
+      "sha256": "6fa0db88f11dbb517a0857de55f15c6ca81b3b56248edec49cda33fc85504a0b",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "COGN3.SA": {
+      "fetched_at": "2026-07-26T17:50:13-0300",
+      "first_date": "2012-03-14",
+      "last_date": "2025-12-30",
+      "n_rows": 3430,
+      "sha256": "b2a024345401e529ba294dd5fc767af6347175fd8b5a4eea1487441971b73c48",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CPFE3.SA": {
+      "fetched_at": "2026-07-26T17:50:15-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "b13f9732d4dc182a9c8e4cc77f2128d32b66077d1eac99f9e846f7b619afc857",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CPLE6.SA": {
+      "fetched_at": "2026-07-26T17:50:16-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CRFB3.SA": {
+      "fetched_at": "2026-07-26T17:50:18-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CRUZ3.SA": {
+      "fetched_at": "2026-07-26T17:50:19-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CSAN3.SA": {
+      "fetched_at": "2026-07-26T17:50:21-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "50fa68680f40dac6b5b1e914dc1e5b519732b24b34f6988699d27943d3cc367d",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CSNA3.SA": {
+      "fetched_at": "2026-07-26T17:50:22-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "b2f4c68e56967c534d26a3a548086f9520c153387a398a5527a0e390a56a19bd",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CTIP3.SA": {
+      "fetched_at": "2026-07-26T17:50:23-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "CVCB3.SA": {
+      "fetched_at": "2026-07-26T17:50:25-0300",
+      "first_date": "2013-12-09",
+      "last_date": "2025-12-30",
+      "n_rows": 2999,
+      "sha256": "c59933d7cc89f4cddee597ac0a4fa809c76527add24dd9aa0eb53761112a0a79",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CXSE3.SA": {
+      "fetched_at": "2026-07-26T17:50:26-0300",
+      "first_date": "2021-04-30",
+      "last_date": "2025-12-30",
+      "n_rows": 1167,
+      "sha256": "cdfba1280224c022b22d84d390c04a78b3e511001a00f35966bf09a8541e2202",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "CYRE3.SA": {
+      "fetched_at": "2026-07-26T17:50:28-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "1958cdea2cf012d91ad589bf591e48a159caa7c91977de34918b29ea3cc6ea8c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "DASA3.SA": {
+      "fetched_at": "2026-07-26T17:50:30-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "0d6e81c9152fc2164e70702111e748f9a6a5c42f9e36edfe6e6bb82e1f772e52",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "DTEX3.SA": {
+      "fetched_at": "2026-07-26T17:50:31-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "DXCO3.SA": {
+      "fetched_at": "2026-07-26T17:50:33-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "716bd37c41a07a12c6b4a40dc61c0ec5861b5aa6f87668e5dcbd58176a942038",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ECOD3.SA": {
+      "fetched_at": "2026-07-26T17:50:35-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ECOR3.SA": {
+      "fetched_at": "2026-07-26T17:50:36-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "0709063be6fa67275535019538d79386e41a943ebd3b6553840621b44b79d6da",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "EGIE3.SA": {
+      "fetched_at": "2026-07-26T17:50:38-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "6e0531bb3510929d5a444d1c1e7d04ed0248ef7f1661601ec58f53c6534bf52c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ELET3.SA": {
+      "fetched_at": "2026-07-26T17:50:39-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ELET6.SA": {
+      "fetched_at": "2026-07-26T17:50:41-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ELPL4.SA": {
+      "fetched_at": "2026-07-26T19:48:18-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "note": "delisted before 2020 (VALE5 converted to VALE3 in 2017, ELPL4 acquired by Enel in 2018, VVAR11 units dissolved); yfinance 0.2.61 fails to parse Yahoo's payload deterministically rather than returning empty",
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "EMBR3.SA": {
+      "fetched_at": "2026-07-26T17:50:49-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ENBR3.SA": {
+      "fetched_at": "2026-07-26T17:50:51-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "ENEV3.SA": {
+      "fetched_at": "2026-07-26T17:50:52-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "4057ff4f162cd1f07c74dc2cb37a80c08ee16d27e96ffc8d5cab567e20eea2ec",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ENGI11.SA": {
+      "fetched_at": "2026-07-26T17:50:54-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "bde8bc0c1ec672b0dcd700cf1c5021f81ec18da05b7a36668fce49a988d45b26",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "EQTL3.SA": {
+      "fetched_at": "2026-07-26T17:50:56-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "037820aa1942c2e19ece8044d4d1a2d5ee9b8f50d900b0e3957a63f309675508",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ESTC3.SA": {
+      "fetched_at": "2026-07-26T17:50:57-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "EVEN3.SA": {
+      "fetched_at": "2026-07-26T17:50:59-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "c44dab6363a71dabd39f5bdc608f8a6087b518e17fdf1acb5da5cb34e6a63342",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "EZTC3.SA": {
+      "fetched_at": "2026-07-26T17:51:01-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "a0f5a380e3eefaa9671df9e7c76dcad0daba8763b821e8df6b510ad6c2715fb9",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "FIBR3.SA": {
+      "fetched_at": "2026-07-26T17:51:02-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2019-01-02",
+      "n_rows": 2009,
+      "sha256": "59ef2dbef82280e8f74d6df979a9a698cad06149447d549ca274ab5a3eac35d7",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "FLRY3.SA": {
+      "fetched_at": "2026-07-26T17:51:04-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "223535ae0bd45122be83eaf1710e4e799359242559c77113d1002b69a689f9c3",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "GFSA3.SA": {
+      "fetched_at": "2026-07-26T17:51:05-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "d5c4282186077a001a2c413d3d465e83ec5e9c259655b3584c4ecaf8ec5c989f",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "GGBR4.SA": {
+      "fetched_at": "2026-07-26T17:51:07-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "6a7ee9c72f0fb8e50aee7fd94d8f6dd427264342e0d9968d08193589f9c0c0e4",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "GNDI3.SA": {
+      "fetched_at": "2026-07-26T17:51:09-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "GOAU4.SA": {
+      "fetched_at": "2026-07-26T17:51:10-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "9dcb2de8f393402b167d387181732222f54b90c952651a4cc58e52ecee891bfc",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "GOLL4.SA": {
+      "fetched_at": "2026-07-26T17:51:12-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "HAPV3.SA": {
+      "fetched_at": "2026-07-26T17:51:13-0300",
+      "first_date": "2018-04-26",
+      "last_date": "2025-12-30",
+      "n_rows": 1909,
+      "sha256": "f7b7bd52c014a289613d7bebabd242c41f7295844052a1d6516869a3c09965cc",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "HGTX3.SA": {
+      "fetched_at": "2026-07-26T17:51:15-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "HYPE3.SA": {
+      "fetched_at": "2026-07-26T17:51:17-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "6b76634d877acc4393ac2345f5035a8119148f4eef9d9b66f0d74c1c5940470a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "IGTA3.SA": {
+      "fetched_at": "2026-07-26T17:51:18-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "IGTI11.SA": {
+      "fetched_at": "2026-07-26T17:51:19-0300",
+      "first_date": "2021-11-22",
+      "last_date": "2025-12-30",
+      "n_rows": 1027,
+      "sha256": "d6c68638d8da18e7e20ff0be37c46d01864031acd5aa448fb3a3644065ebb361",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "IRBR3.SA": {
+      "fetched_at": "2026-07-26T17:51:21-0300",
+      "first_date": "2017-07-31",
+      "last_date": "2025-12-30",
+      "n_rows": 2098,
+      "sha256": "2b376d50bd810388abc01b5052ba64732556634484ef6202266db172b3dc7beb",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ISAE4.SA": {
+      "fetched_at": "2026-07-26T17:51:22-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "89cdb4be0c4eecedb69e1f024e17601862caa45be899fbd05442fc68c00f201a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ITSA4.SA": {
+      "fetched_at": "2026-07-26T17:51:24-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "9517c93fdaf498d19ba91fa4b56653856ea3b2a0b851d9d1e79fbc2d04ecaa07",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "ITUB4.SA": {
+      "fetched_at": "2026-07-26T17:51:26-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "68c7ec4d289bfa5c80fe9ef66a6a2c31212c5a0b205e453810e4b88d05e5d8d3",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "JBSS3.SA": {
+      "fetched_at": "2026-07-26T17:51:28-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "JHSF3.SA": {
+      "fetched_at": "2026-07-26T17:51:29-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "bff3dd80efdc4fb391fbf80c3651029a0b941373ac774651abd8abd49cedf0e0",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "KLBN11.SA": {
+      "fetched_at": "2026-07-26T17:51:31-0300",
+      "first_date": "2014-01-23",
+      "last_date": "2025-12-30",
+      "n_rows": 2970,
+      "sha256": "0e6108da5946cedb3f9f940f89fd347374da9943e18f17954a28c479e12cdc85",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "KLBN4.SA": {
+      "fetched_at": "2026-07-26T17:51:33-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "72b31ec4746a3185ee5f14af61d7a28be8cfee4c786d2f7a64bb72611c6f6338",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "KROT3.SA": {
+      "fetched_at": "2026-07-26T17:51:34-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "LAME4.SA": {
+      "fetched_at": "2026-07-26T17:51:36-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "LCAM3.SA": {
+      "fetched_at": "2026-07-26T17:51:37-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "LIGT3.SA": {
+      "fetched_at": "2026-07-26T17:51:39-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "14cfdc248b06b5a057f48a756802e1e98c0d92cdcce3c4f2413a8f845701023a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "LLXL3.SA": {
+      "fetched_at": "2026-07-26T17:51:40-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "LOGG3.SA": {
+      "fetched_at": "2026-07-26T17:51:42-0300",
+      "first_date": "2018-12-21",
+      "last_date": "2025-12-30",
+      "n_rows": 1746,
+      "sha256": "9b649a175d1db788267dab175f716d15067cb22f66ebb52d9b03a1ffcb556220",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "LREN3.SA": {
+      "fetched_at": "2026-07-26T17:51:43-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "553c888312b327543cb9173308e362c0fe5791834f161544e8e30c11274c6233",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "LWSA3.SA": {
+      "fetched_at": "2026-07-26T17:51:45-0300",
+      "first_date": "2020-02-06",
+      "last_date": "2025-12-30",
+      "n_rows": 1469,
+      "sha256": "bb84e840970228516970b10bc73cd9803498acfd84f3a01c915a6dbd0ab5744a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "MGLU3.SA": {
+      "fetched_at": "2026-07-26T17:51:46-0300",
+      "first_date": "2011-05-02",
+      "last_date": "2025-12-30",
+      "n_rows": 3647,
+      "sha256": "4e77a2907c81e7b8b799193f8d7d0fd4b14c687c55079490d03418eadd93a4e2",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "MMXM3.SA": {
+      "fetched_at": "2026-07-26T17:51:48-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "MRFG3.SA": {
+      "fetched_at": "2026-07-26T17:51:49-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "MRVE3.SA": {
+      "fetched_at": "2026-07-26T17:51:51-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "445f4ad4e8c40ddf1bb3d76b32fb60b094c45a3ded956e041f421063e3aaa3e6",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "MULT3.SA": {
+      "fetched_at": "2026-07-26T17:51:53-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "39ca416a0d000bc6133c8ef472f9a4be4c7a6d0ca1a78f1beaf011c0d402002b",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "NATU3.SA": {
+      "fetched_at": "2026-07-26T17:51:54-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 2345,
+      "sha256": "c5e5b67543177f35b3e5ad391108d3c5468fd813f87a5e5742b89972da18979a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "NTCO3.SA": {
+      "fetched_at": "2026-07-26T17:51:56-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "OGXP3.SA": {
+      "fetched_at": "2026-07-26T17:51:57-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2019-01-10",
+      "n_rows": 2011,
+      "sha256": "e026642d1c16383021d0633bcdfa86d26361163297caa1dd5a9824d8ab19a633",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "OIBR3.SA": {
+      "fetched_at": "2026-07-26T17:51:59-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "615653ac7337430251d306296b49d371c2627c7d9ddd9e577ba135f7e3480b62",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "OIBR4.SA": {
+      "fetched_at": "2026-07-26T17:52:00-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "351210df36b54b50f3d1d7dda071180adcfabfbdc758d1843406911f8f426eac",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PCAR3.SA": {
+      "fetched_at": "2026-07-26T17:52:02-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "af0a5785b2efc21f6b746e02a38a766b93a43da822562d23ac418e8dd1520d2d",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PCAR4.SA": {
+      "fetched_at": "2026-07-26T17:52:03-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "PCAR5.SA": {
+      "fetched_at": "2026-07-26T17:52:05-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "PDGR3.SA": {
+      "fetched_at": "2026-07-26T17:52:06-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "82e5a7c12b7b6b81e1e5c606c30a4ec51860276cbc51b46ffef4edbbd59fd64a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PETR3.SA": {
+      "fetched_at": "2026-07-26T17:52:08-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "7dee072dfda6e2751a844b7e817e49a2446d1172d2b42308893baf5807c4026b",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PETR4.SA": {
+      "fetched_at": "2026-07-26T17:52:10-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "3980d3030d4e06b57afd4449ed8017a020845c5e766f960d052445a4dc5a845c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PETZ3.SA": {
+      "fetched_at": "2026-07-26T17:52:11-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "POMO4.SA": {
+      "fetched_at": "2026-07-26T17:52:13-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "d9f4e467107119de9239a2ba1c82c3a1130e1ebcc521082164605fef21062611",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "POSI3.SA": {
+      "fetched_at": "2026-07-26T17:52:14-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "597e758ca95b5409afce80f9bafea5fff4e77c09dd6e8e713bab4f381b1a632b",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PRIO3.SA": {
+      "fetched_at": "2026-07-26T17:52:16-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "ade5bf8561bf405e2d58ad9fa08fe8a8ff840c11baa9f2b84fb28bd7f50c3c13",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "PSSA3.SA": {
+      "fetched_at": "2026-07-26T17:52:18-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "0eed70087185af3b9b6dc71fcc0e861ffe6fa5ec83a73d6a06100d940aa35552",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "QUAL3.SA": {
+      "fetched_at": "2026-07-26T17:52:19-0300",
+      "first_date": "2011-06-29",
+      "last_date": "2025-12-30",
+      "n_rows": 3606,
+      "sha256": "4f54c189c3b9008d510b1cb4bf01d8ff832cdb53c57541a1d52584f7d5fb0d8d",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RADL3.SA": {
+      "fetched_at": "2026-07-26T17:52:21-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "b687c2de36c682298c3e9e48f3e2ed58767983b2e7d6578a99129eee7651813a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RAIL3.SA": {
+      "fetched_at": "2026-07-26T17:52:23-0300",
+      "first_date": "2015-04-02",
+      "last_date": "2025-12-30",
+      "n_rows": 2675,
+      "sha256": "eb38c160ed8067b682913d0983b13e319bca02d17980d2b3f23c98a4a7ccdd16",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RAIZ4.SA": {
+      "fetched_at": "2026-07-26T17:52:24-0300",
+      "first_date": "2021-08-05",
+      "last_date": "2025-12-30",
+      "n_rows": 1100,
+      "sha256": "4d52f271c7abc8a6e4959456eb44d3a0a07db3f3e3b2943ec0b28e9349e48f9e",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RDCD3.SA": {
+      "fetched_at": "2026-07-26T17:52:25-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "RDOR3.SA": {
+      "fetched_at": "2026-07-26T17:52:27-0300",
+      "first_date": "2020-12-15",
+      "last_date": "2025-12-30",
+      "n_rows": 1256,
+      "sha256": "e3058591d8c30cc8ab4f0ea21de1ce5ae6fcbcc7d3b4102eda5cb76a257c0b47",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RECV3.SA": {
+      "fetched_at": "2026-07-26T17:52:28-0300",
+      "first_date": "2021-05-05",
+      "last_date": "2025-12-30",
+      "n_rows": 1164,
+      "sha256": "f98ade632b314c6a8ad8a4d5e01f6b3154cbdf29a7f773afa7ba75a5c4257b14",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RENT3.SA": {
+      "fetched_at": "2026-07-26T17:52:29-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "f3e2c0807142ba5c3e40de095bfb4d384205042c4263cf55c7f4d32b58ab8505",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RRRP3.SA": {
+      "fetched_at": "2026-07-26T17:52:31-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "RSID3.SA": {
+      "fetched_at": "2026-07-26T17:52:33-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "d62609c38487f267691475bf2339de3c685ddb1f610c140fab668f8572f8f36e",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "RUMO3.SA": {
+      "fetched_at": "2026-07-26T17:52:34-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "SANB11.SA": {
+      "fetched_at": "2026-07-26T17:52:35-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "eb184852bba0ab513236f0c3daf81b30d442f94c51ee556901345843602d0753",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "SAPR11.SA": {
+      "fetched_at": "2026-07-26T17:52:37-0300",
+      "first_date": "2017-12-26",
+      "last_date": "2025-12-30",
+      "n_rows": 1992,
+      "sha256": "8d429158ed46a4b0bfc6f1d63073de5ce3003cde7ba6c99b26b03f1f6432351d",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "SBSP3.SA": {
+      "fetched_at": "2026-07-26T17:52:38-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "5e44f043b1828bbdb3ed646a7d213943902e6eb97213b5b781394d9718eec2f7",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "SLCE3.SA": {
+      "fetched_at": "2026-07-26T17:52:40-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "ceb757efae4c212d06ec025bf5f1ca880e42c09a2f0fe45d69b773207312b3e2",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "SMLE3.SA": {
+      "fetched_at": "2026-07-26T17:52:41-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "SMLS3.SA": {
+      "fetched_at": "2026-07-26T17:52:43-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "SMTO3.SA": {
+      "fetched_at": "2026-07-26T17:52:45-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "b98ddd645c837c0852c5d36d46ad298e6a4bbbf5f43982d43c4fcd1ee703ea82",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "SOMA3.SA": {
+      "fetched_at": "2026-07-26T17:52:46-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "STBP3.SA": {
+      "fetched_at": "2026-07-26T17:52:48-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "SULA11.SA": {
+      "fetched_at": "2026-07-26T17:52:49-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "SUZB3.SA": {
+      "fetched_at": "2026-07-26T17:52:51-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "0c7eae09428ae68ee2d211633565f93d4270123548f89f91edcd67688dccbd9a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "SUZB5.SA": {
+      "fetched_at": "2026-07-26T17:52:52-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "TAEE11.SA": {
+      "fetched_at": "2026-07-26T17:52:54-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "434da8526b29309ba77ea1658c5593f4a081beeade3abff2e9de80751939b016",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "TAMM4.SA": {
+      "fetched_at": "2026-07-26T17:52:55-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "TBLE3.SA": {
+      "fetched_at": "2026-07-26T17:52:56-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "TCSL4.SA": {
+      "fetched_at": "2026-07-26T17:52:57-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "TIMP3.SA": {
+      "fetched_at": "2026-07-26T17:52:59-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "TIMS3.SA": {
+      "fetched_at": "2026-07-26T17:53:00-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "32059a7e4d3e0df107d587cbd6ebc3a718d8fa31f5a4853c2a6d94278e6b511e",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "TNLP4.SA": {
+      "fetched_at": "2026-07-26T17:53:01-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "TOTS3.SA": {
+      "fetched_at": "2026-07-26T17:53:03-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "3ac215584539757962b44598f881ff267d61a8bc8e2b555185f5ff5038fc3e6a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "TRPL4.SA": {
+      "fetched_at": "2026-07-26T17:53:05-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "UGPA3.SA": {
+      "fetched_at": "2026-07-26T17:53:07-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "5a7d613606c237fdc7e6a10033894db9dd7e411c1b7f3464c8e36a5ae1364aa3",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "USIM3.SA": {
+      "fetched_at": "2026-07-26T17:53:08-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "ea8447a124b0942a6abf6dfa235ada314953ba16829c1a9f4de239180623aff6",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "USIM5.SA": {
+      "fetched_at": "2026-07-26T17:53:10-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "3236124e9a5264b9bfd18d27dec62c15784393ebd48f511b7c9b2134bd26b1d1",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "VALE3.SA": {
+      "fetched_at": "2026-07-26T17:53:11-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "1d08fbbe5b8ed5570d3c2f478164cc76c7e48db743394489fae9bc893ae9f397",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "VALE5.SA": {
+      "fetched_at": "2026-07-26T19:48:18-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "note": "delisted before 2020 (VALE5 converted to VALE3 in 2017, ELPL4 acquired by Enel in 2018, VVAR11 units dissolved); yfinance 0.2.61 fails to parse Yahoo's payload deterministically rather than returning empty",
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "VAMO3.SA": {
+      "fetched_at": "2026-07-26T17:53:19-0300",
+      "first_date": "2021-02-02",
+      "last_date": "2025-12-30",
+      "n_rows": 1226,
+      "sha256": "375c7b21e84417c36b7fc5000c81a6df5efba97b423aee2a567f748480bef39c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "VBBR3.SA": {
+      "fetched_at": "2026-07-26T17:53:21-0300",
+      "first_date": "2018-03-14",
+      "last_date": "2025-12-30",
+      "n_rows": 1939,
+      "sha256": "7fda3d4b30188ebc16ccd009fce89541c6c783a7efd3cbd8a7a72c26e9a9eed7",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "VIIA3.SA": {
+      "fetched_at": "2026-07-26T17:53:22-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "VIVA3.SA": {
+      "fetched_at": "2026-07-26T17:53:23-0300",
+      "first_date": "2019-10-11",
+      "last_date": "2025-12-30",
+      "n_rows": 1547,
+      "sha256": "95d7377d3d81e35f2e588387b6d2c27c8dc023b9bf0432a90e117437d8cccf49",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "VIVO4.SA": {
+      "fetched_at": "2026-07-26T17:53:25-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "VIVT3.SA": {
+      "fetched_at": "2026-07-26T17:53:27-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "c9d72199c0e8fe28e7cdb02033bd04768ba56487bca57f1931328fd97f5bcb1a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "VIVT4.SA": {
+      "fetched_at": "2026-07-26T17:53:28-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "VVAR11.SA": {
+      "fetched_at": "2026-07-26T19:48:18-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "note": "delisted before 2020 (VALE5 converted to VALE3 in 2017, ELPL4 acquired by Enel in 2018, VVAR11 units dissolved); yfinance 0.2.61 fails to parse Yahoo's payload deterministically rather than returning empty",
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "VVAR3.SA": {
+      "fetched_at": "2026-07-26T17:53:36-0300",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "sha256": "d96b3604c7400fc32f3e05d8ffc0bbe9938939a772895d2b44d34240e96de60c",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "no_data"
+    },
+    "WEGE3.SA": {
+      "fetched_at": "2026-07-26T17:53:38-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "1b6d07481466ad0230a2afaa39c313354698442dc5d857763a107cc60f7961de",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    },
+    "YDUQ3.SA": {
+      "fetched_at": "2026-07-26T17:53:40-0300",
+      "first_date": "2010-12-01",
+      "last_date": "2025-12-30",
+      "n_rows": 3748,
+      "sha256": "57cc8644d3edf36772c2c5ac610d53bf0a331600ca59d1dd428834c2e642120a",
+      "span_end": "2026-01-01",
+      "span_start": "2010-12-01",
+      "status": "ok"
+    }
+  },
+  "yfinance_version": "0.2.61"
+}

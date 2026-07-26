@@ -36,6 +36,60 @@ Note that `motsp_irace` has the same perturbation ([reference_pareto_front_calcu
 
 **Fix:** Fix the docstrings to say "daily" instead of "annualized". Do not add annualization.
 
+Resolved by deleting `downloader.py`; `generate_instances.py` documents daily statistics throughout.
+
+### BUG 5 — Population initialization writes out-of-range chromosomes (all six solvers) ⚠️ OPEN
+
+Found while smoke-testing the Phase 2 instances. Introduced by commit `6b6aa16`
+("Enhance population initialization … to prioritize assets with positive expected
+returns"), present in all six `*_solver.cpp` files. Two defects compound:
+
+```cpp
+std::vector<unsigned> positive_expected_returns_indexes(this->instance.num_assets);
+for (unsigned j = 0; j < this->instance.num_assets; j++) {
+  if (this->instance.expected_returns[j] > 0.0) {
+    positive_expected_returns_indexes.push_back(j);   // (1)
+  }
+}
+...
+x[l] = this->instance.expected_returns[l];            // (2)
+sum += x[l];
+...
+x[k] /= sum;
+```
+
+1. The vector is **sized** to `num_assets`, filling it with `num_assets` zeros,
+   and then appended to. Every phantom leading entry points at asset 0,
+   regardless of that asset's expected return.
+2. Raw expected returns are used as weights. They may be negative, so `sum` can
+   be near zero or negative, and `x[k] /= sum` then yields chromosome entries
+   above 1 or below 0.
+
+`Decoder::decode` and the `Solution` constructor both normalize by the weight
+sum, which cannot repair a vector containing negatives: the normalized weights
+come out greater than 1 or negative, so the portfolio variance exceeds the
+largest single-asset variance and the Shannon entropy goes negative.
+
+Reproduced on `ibov_2020` (5 s, NS-BRKGA): 66 of 100 archived solutions have
+negative entropy, and one reports `w'Σw = 0.0206` against a theoretical maximum
+of `2.51e-3` for any normalized non-negative weight vector. `ibov_2011` shows
+none — its alphabetically first asset, BBAS3, has a *positive* mean, while
+`ibov_2020`'s ABEV3 has a *negative* one. That sign is exactly the discriminator
+the defect predicts.
+
+The pre-existing legacy instance masks the problem differently, emitting
+`0 0 -nan 0` rows: an all-zero chromosome leaves `total_weight == 0`, the
+normalization guard `if (total_weight > 0.0)` skips, and `value[0] / sqrt(value[1])`
+evaluates `0.0 / 0.0`.
+
+**Fix (not yet applied):** construct the index vector empty (`reserve`, not sized),
+restrict it to strictly positive expected returns, and derive weights from a
+non-negative quantity so the normalizing sum is strictly positive. Add a guard so
+`value[2]` is not computed from a zero variance. This is solver-side work
+touching all six solvers and their tests, and belongs with the hardcoded-`4`
+cleanup Phase 3 deferred. **Any experiment run before this is fixed is
+compromised for NS-BRKGA and probably for the other five.**
+
 ---
 
 ## Key Differences from `motsp_irace`
@@ -105,9 +159,9 @@ Note that `motsp_irace` has the same perturbation ([reference_pareto_front_calcu
 
 ---
 
-## Phase 2 — Instance Generation
+## Phase 2 — Instance Generation ✅ DONE
 
-**Objective:** Generate 10 IBOVESPA instances with training/OOS split and annualized statistics.
+**Objective:** Generate 10 IBOVESPA instances with training/OOS split and daily statistics.
 
 ### Files to create/modify
 
@@ -126,9 +180,12 @@ Note that `motsp_irace` has the same perturbation ([reference_pareto_front_calcu
 
 - Validates all 10 instances: non-empty returns, square symmetric covariance, finite values, matching ticker order, no date overlap
 
-#### [MODIFY] [downloader.py](file:///home/luishpmendes/mopop/downloader.py)
+#### [DELETED] `downloader.py`
 
-- Fix docstrings: change "annualized" to "daily" in `calculate_expected_returns()` and `calculate_covariance_matrix()`
+Retired rather than fixed. `generate_instances.py` is self-contained and carries
+BUG 4's correction: its statistics are documented as **daily** throughout, with no
+annualization anywhere. Nothing referenced `downloader.py` — not `run.sh`, the
+Makefile, nor any plotter.
 
 ### Instance date table
 
@@ -155,17 +212,68 @@ instances/ibov_2011/
 
 ### Tasks
 
-1. Implement `generate_instances.py` with annualization
+1. Implement `generate_instances.py` (daily statistics, no annualization)
 2. Implement `validate_instances.py`
 3. Generate all 10 instances
 4. Verify re-running on cached prices produces identical CSVs
 
-### Acceptance criteria
+### Acceptance criteria — all met
 
-- All 10 instances pass validation
-- Deterministic from cached prices
+- All 10 instances pass validation (`validate_instances.py`, 10/10)
+- Deterministic from cached prices: rebuilt inside an isolated network namespace
+  (`unshare -rn`), `diff -r` byte-identical
 - Malformed ticker → nonzero exit
 - Train/OOS use same ticker order and dimensions
+
+### Cache layer
+
+`fetch` is the only networked step; `build` has no network code path at all.
+
+```
+cache/prices/{TICKER}.csv     date,close — 165 files, committed
+cache/manifest.json           per ticker: status, span, first/last date, n_rows, sha256
+```
+
+Each manifest entry carries a `status`: `ok`, `no_data` (the source answered
+authoritatively that it has none), or `error` (the attempt failed and the truth
+is unknown). `build` refuses to run while any needed ticker is `error`, because
+treating an unknown history as an empty one would silently shrink an instance
+into something that still looks perfectly valid. `fetch` likewise refuses to
+overwrite a non-empty cached series with an empty response.
+
+### Outcome: partial coverage and survivorship bias
+
+Yahoo Finance does not retain delisted, renamed, or merged symbols — it serves
+nothing for them at any date range. Because the constituent lists are historical,
+**65 of the 165 unique tickers are unavailable**, costing 20–32 names per
+instance:
+
+| Instance | Constituents | No data at source | Dropped by coverage rule | Assets |
+|---|---|---|---|---|
+| `ibov_2011` | 58 | 30 | 0 | 28 |
+| `ibov_2012` | 62 | 30 | 2 | 30 |
+| `ibov_2013` | 66 | 30 | 0 | 36 |
+| `ibov_2014` | 72 | 32 | 2 | 38 |
+| `ibov_2015` | 68 | 31 | 2 | 35 |
+| `ibov_2016` | 61 | 24 | 2 | 35 |
+| `ibov_2017` | 59 | 23 | 2 | 34 |
+| `ibov_2018` | 63 | 20 | 2 | 41 |
+| `ibov_2019` | 65 | 22 | 1 | 42 |
+| `ibov_2020` | 73 | 26 | 0 | 47 |
+
+The ≥95%-plus-endpoints coverage rule accounts for at most 2 drops per instance
+(FIBR3, OGXP3, NATU3 — genuine mid-window delistings, exactly what the endpoint
+test exists to catch). The dominant loss is upstream data availability.
+
+**Consequence:** every asset in an instance is one whose price record survived to
+the date the cache was built, so expected returns are biased upward. Each
+`metadata.json` records this in a `survivorship_bias_warning` field along with
+per-ticker drop causes. For comparing the six solvers this is a documentation
+matter rather than a threat to validity — the instances are fixed and every
+solver sees identical data — but it does inflate any claim made from the OOS
+windows. Revisit before writing the results chapter. Near-complete coverage would
+require a source that retains delisted securities (B3's COTAHIST files, which
+carry unadjusted prices, or a provider such as Economatica).
 
 ---
 
