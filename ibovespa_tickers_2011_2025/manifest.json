@@ -1,0 +1,77 @@
+[
+  {
+    "year": 2011,
+    "constituents": 58,
+    "file": "tickers_2011.csv"
+  },
+  {
+    "year": 2012,
+    "constituents": 62,
+    "file": "tickers_2012.csv"
+  },
+  {
+    "year": 2013,
+    "constituents": 66,
+    "file": "tickers_2013.csv"
+  },
+  {
+    "year": 2014,
+    "constituents": 72,
+    "file": "tickers_2014.csv"
+  },
+  {
+    "year": 2015,
+    "constituents": 68,
+    "file": "tickers_2015.csv"
+  },
+  {
+    "year": 2016,
+    "constituents": 61,
+    "file": "tickers_2016.csv"
+  },
+  {
+    "year": 2017,
+    "constituents": 59,
+    "file": "tickers_2017.csv"
+  },
+  {
+    "year": 2018,
+    "constituents": 63,
+    "file": "tickers_2018.csv"
+  },
+  {
+    "year": 2019,
+    "constituents": 65,
+    "file": "tickers_2019.csv"
+  },
+  {
+    "year": 2020,
+    "constituents": 73,
+    "file": "tickers_2020.csv"
+  },
+  {
+    "year": 2021,
+    "constituents": 81,
+    "file": "tickers_2021.csv"
+  },
+  {
+    "year": 2022,
+    "constituents": 93,
+    "file": "tickers_2022.csv"
+  },
+  {
+    "year": 2023,
+    "constituents": 89,
+    "file": "tickers_2023.csv"
+  },
+  {
+    "year": 2024,
+    "constituents": 87,
+    "file": "tickers_2024.csv"
+  },
+  {
+    "year": 2025,
+    "constituents": 87,
+    "file": "tickers_2025.csv"
+  }
+]

@@ -7,187 +7,182 @@
 
 int main(int argc, char* argv[]) {
   Argument_Parser arg_parser(argc, argv);
-  std::vector<double> hypervolume_values, igd_plus_values;
+  std::vector<double> hvr_values, nigd_plus_values;
 
-  unsigned num_hypervolumes, index_best, index_median, num_igd_pluses;
-  std::vector<std::pair<double, unsigned>> hypervolumes, igd_pluses;
+  unsigned num_hvrs, index_best, index_median, num_nigd_pluses;
+  std::vector<std::pair<double, unsigned>> hvrs, nigd_pluses;
 
-  for (num_hypervolumes = 0; arg_parser.option_exists(
-           "--hypervolume-" + std::to_string(num_hypervolumes));
-       num_hypervolumes++) {
+  for (num_hvrs = 0;
+       arg_parser.option_exists("--hvr-" + std::to_string(num_hvrs));
+       num_hvrs++) {
   }
 
-  for (num_igd_pluses = 0;
-       arg_parser.option_exists("--igd-plus-" + std::to_string(num_igd_pluses));
-       num_igd_pluses++) {
+  for (num_nigd_pluses = 0; arg_parser.option_exists(
+           "--nigd-plus-" + std::to_string(num_nigd_pluses));
+       num_nigd_pluses++) {
   }
 
-  hypervolumes.resize(num_hypervolumes);
-  igd_pluses.resize(num_igd_pluses);
+  hvrs.resize(num_hvrs);
+  nigd_pluses.resize(num_nigd_pluses);
 
-  for (unsigned i = 0; i < num_hypervolumes; i++) {
+  for (unsigned i = 0; i < num_hvrs; i++) {
     std::ifstream ifs;
-    ifs.open(arg_parser.option_value("--hypervolume-" + std::to_string(i)));
+    ifs.open(arg_parser.option_value("--hvr-" + std::to_string(i)));
 
     if (ifs.is_open()) {
-      ifs >> hypervolumes[i].first;
+      ifs >> hvrs[i].first;
 
       if (ifs.eof() || ifs.fail() || ifs.bad()) {
         throw std::runtime_error(
             "Error reading file " +
-            arg_parser.option_value("--hypervolume-" + std::to_string(i)) +
-            ".");
+            arg_parser.option_value("--hvr-" + std::to_string(i)) + ".");
       }
 
-      hypervolumes[i].second = i;
+      hvrs[i].second = i;
       ifs.close();
-      hypervolume_values.push_back(hypervolumes[i].first);
+      hvr_values.push_back(hvrs[i].first);
     } else {
       throw std::runtime_error(
-          "A File " +
-          arg_parser.option_value("--hypervolume-" + std::to_string(i)) +
+          "File " + arg_parser.option_value("--hvr-" + std::to_string(i)) +
           " not found.");
     }
   }
 
-  for (unsigned i = 0; i < num_igd_pluses; i++) {
+  for (unsigned i = 0; i < num_nigd_pluses; i++) {
     std::ifstream ifs;
-    ifs.open(arg_parser.option_value("--igd-plus-" + std::to_string(i)));
+    ifs.open(arg_parser.option_value("--nigd-plus-" + std::to_string(i)));
 
     if (ifs.is_open()) {
-      ifs >> igd_pluses[i].first;
+      ifs >> nigd_pluses[i].first;
 
       if (ifs.eof() || ifs.fail() || ifs.bad()) {
         throw std::runtime_error(
             "Error reading file " +
-            arg_parser.option_value("--igd-plus-" + std::to_string(i)) + ".");
+            arg_parser.option_value("--nigd-plus-" + std::to_string(i)) + ".");
       }
 
-      igd_pluses[i].second = i;
+      nigd_pluses[i].second = i;
       ifs.close();
-      igd_plus_values.push_back(igd_pluses[i].first);
+      nigd_plus_values.push_back(nigd_pluses[i].first);
     } else {
       throw std::runtime_error(
-          "B File " + arg_parser.option_value("--igd-plus-" + std::to_string(i)) +
+          "File " +
+          arg_parser.option_value("--nigd-plus-" + std::to_string(i)) +
           " not found.");
     }
   }
 
-  if (arg_parser.option_exists("--hypervolumes")) {
+  if (arg_parser.option_exists("--hvrs")) {
     std::ofstream ofs;
-    ofs.open(arg_parser.option_value("--hypervolumes"));
+    ofs.open(arg_parser.option_value("--hvrs"));
 
     if (ofs.is_open()) {
-      for (const std::pair<double, unsigned>& hv : hypervolumes) {
+      for (const std::pair<double, unsigned>& hv : hvrs) {
         ofs << hv.first << std::endl;
 
         if (ofs.eof() || ofs.fail() || ofs.bad()) {
           throw std::runtime_error("Error writing file " +
-                                   arg_parser.option_value("--hypervolumes") +
+                                   arg_parser.option_value("--hvrs") + ".");
+        }
+      }
+
+      ofs.close();
+    } else {
+      throw std::runtime_error("File " + arg_parser.option_value("--hvrs") +
+                               " not created.");
+    }
+  }
+
+  if (arg_parser.option_exists("--nigd-pluses")) {
+    std::ofstream ofs;
+    ofs.open(arg_parser.option_value("--nigd-pluses"));
+
+    if (ofs.is_open()) {
+      for (const std::pair<double, unsigned>& nigd_plus : nigd_pluses) {
+        ofs << nigd_plus.first << std::endl;
+
+        if (ofs.eof() || ofs.fail() || ofs.bad()) {
+          throw std::runtime_error("Error writing file " +
+                                   arg_parser.option_value("--nigd-pluses") +
                                    ".");
         }
+      }
+
+      ofs.close();
+    } else {
+      throw std::runtime_error(
+          "File " + arg_parser.option_value("--nigd-pluses") + " not created.");
+    }
+  }
+
+  if (arg_parser.option_exists("--hvr-statistics")) {
+    std::ofstream ofs;
+    ofs.open(arg_parser.option_value("--hvr-statistics"));
+
+    if (ofs.is_open()) {
+      double hvr_mean =
+          std::accumulate(hvr_values.begin(), hvr_values.end(), 0.0) /
+          hvr_values.size();
+      double hvr_var =
+          std::accumulate(hvr_values.begin(), hvr_values.end(), 0.0,
+                          [hvr_mean](double acc, double val) {
+                            return acc + (val - hvr_mean) * (val - hvr_mean);
+                          }) /
+          hvr_values.size();
+      double hvr_std = std::sqrt(hvr_var);
+
+      ofs << hvr_mean << ", " << hvr_std << std::endl;
+
+      if (ofs.eof() || ofs.fail() || ofs.bad()) {
+        throw std::runtime_error("Error writing file " +
+                                 arg_parser.option_value("--hvr-statistics") +
+                                 ".");
       }
 
       ofs.close();
     } else {
       throw std::runtime_error("File " +
-                               arg_parser.option_value("--hypervolumes") +
+                               arg_parser.option_value("--hvr-statistics") +
                                " not created.");
     }
   }
 
-  if (arg_parser.option_exists("--igd-pluses")) {
+  if (arg_parser.option_exists("--nigd-plus-statistics")) {
     std::ofstream ofs;
-    ofs.open(arg_parser.option_value("--igd-pluses"));
+    ofs.open(arg_parser.option_value("--nigd-plus-statistics"));
 
     if (ofs.is_open()) {
-      for (const std::pair<double, unsigned>& igd_plus : igd_pluses) {
-        ofs << igd_plus.first << std::endl;
-
-        if (ofs.eof() || ofs.fail() || ofs.bad()) {
-          throw std::runtime_error("Error writing file " +
-                                   arg_parser.option_value("--igd-pluses") +
-                                   ".");
-        }
-      }
-
-      ofs.close();
-    } else {
-      throw std::runtime_error(
-          "File " + arg_parser.option_value("--igd-pluses") + " not created.");
-    }
-  }
-
-  if (arg_parser.option_exists("--hypervolume-statistics")) {
-    std::ofstream ofs;
-    ofs.open(arg_parser.option_value("--hypervolume-statistics"));
-
-    if (ofs.is_open()) {
-      double hypervolume_mean = std::accumulate(hypervolume_values.begin(),
-                                                hypervolume_values.end(), 0.0) /
-                                hypervolume_values.size();
-      double hypervolume_var =
-          std::accumulate(hypervolume_values.begin(), hypervolume_values.end(),
-                          0.0,
-                          [hypervolume_mean](double acc, double val) {
-                            return acc + (val - hypervolume_mean) *
-                                             (val - hypervolume_mean);
+      double nigd_plus_mean = std::accumulate(nigd_plus_values.begin(),
+                                              nigd_plus_values.end(), 0.0) /
+                              nigd_plus_values.size();
+      double nigd_plus_var =
+          std::accumulate(nigd_plus_values.begin(), nigd_plus_values.end(), 0.0,
+                          [nigd_plus_mean](double acc, double val) {
+                            return acc + (val - nigd_plus_mean) *
+                                             (val - nigd_plus_mean);
                           }) /
-          hypervolume_values.size();
-      double hypervolume_std = std::sqrt(hypervolume_var);
+          nigd_plus_values.size();
+      double nigd_plus_std = std::sqrt(nigd_plus_var);
 
-      ofs << hypervolume_mean << ", " << hypervolume_std << std::endl;
+      ofs << nigd_plus_mean << ", " << nigd_plus_std << std::endl;
 
       if (ofs.eof() || ofs.fail() || ofs.bad()) {
         throw std::runtime_error(
             "Error writing file " +
-            arg_parser.option_value("--hypervolume-statistics") + ".");
+            arg_parser.option_value("--nigd-plus-statistics") + ".");
       }
 
       ofs.close();
     } else {
       throw std::runtime_error(
-          "File " + arg_parser.option_value("--hypervolume-statistics") +
+          "File " + arg_parser.option_value("--nigd-plus-statistics") +
           " not created.");
     }
   }
 
-  if (arg_parser.option_exists("--igd-plus-statistics")) {
-    std::ofstream ofs;
-    ofs.open(arg_parser.option_value("--igd-plus-statistics"));
-
-    if (ofs.is_open()) {
-      double igd_plus_mean =
-          std::accumulate(igd_plus_values.begin(), igd_plus_values.end(), 0.0) /
-          igd_plus_values.size();
-      double igd_plus_var =
-          std::accumulate(igd_plus_values.begin(), igd_plus_values.end(), 0.0,
-                          [igd_plus_mean](double acc, double val) {
-                            return acc + (val - igd_plus_mean) *
-                                             (val - igd_plus_mean);
-                          }) /
-          igd_plus_values.size();
-      double igd_plus_std = std::sqrt(igd_plus_var);
-
-      ofs << igd_plus_mean << ", " << igd_plus_std << std::endl;
-
-      if (ofs.eof() || ofs.fail() || ofs.bad()) {
-        throw std::runtime_error(
-            "Error writing file " +
-            arg_parser.option_value("--igd-plus-statistics") + ".");
-      }
-
-      ofs.close();
-    } else {
-      throw std::runtime_error(
-          "File " + arg_parser.option_value("--igd-plus-statistics") +
-          " not created.");
-    }
-  }
-
-  std::sort(hypervolumes.begin(), hypervolumes.end());
-  index_best = hypervolumes.back().second;
-  index_median = hypervolumes[hypervolumes.size() / 2].second;
+  std::sort(hvrs.begin(), hvrs.end());
+  index_best = hvrs.back().second;
+  index_median = hvrs[hvrs.size() / 2].second;
 
   if (arg_parser.option_exists("--statistics-best") &&
       arg_parser.option_exists("--statistics-" + std::to_string(index_best))) {
@@ -219,7 +214,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "D File " +
+          "File " +
           arg_parser.option_value("--statistics-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -258,7 +253,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "E File " +
+          "File " +
           arg_parser.option_value("--statistics-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -294,7 +289,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "F File " +
+          "File " +
           arg_parser.option_value("--pareto-" + std::to_string(index_best)) +
           " not found.");
     }
@@ -330,23 +325,23 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "G File " +
+          "File " +
           arg_parser.option_value("--pareto-" + std::to_string(index_median)) +
           " not found.");
     }
   }
 
-  if (arg_parser.option_exists("--hypervolume-snapshots-best") &&
-      arg_parser.option_exists("--hypervolume-snapshots-" +
+  if (arg_parser.option_exists("--hvr-snapshots-best") &&
+      arg_parser.option_exists("--hvr-snapshots-" +
                                std::to_string(index_best))) {
     std::ifstream ifs;
-    ifs.open(arg_parser.option_value("--hypervolume-snapshots-" +
+    ifs.open(arg_parser.option_value("--hvr-snapshots-" +
                                      std::to_string(index_best)),
              std::ios::binary);
 
     if (ifs.is_open()) {
       std::ofstream ofs;
-      ofs.open(arg_parser.option_value("--hypervolume-snapshots-best"),
+      ofs.open(arg_parser.option_value("--hvr-snapshots-best"),
                std::ios::binary);
 
       if (ofs.is_open()) {
@@ -355,37 +350,37 @@ int main(int argc, char* argv[]) {
         if (ofs.eof() || ofs.fail() || ofs.bad()) {
           throw std::runtime_error(
               "Error writing file " +
-              arg_parser.option_value("--hypervolume-snapshots-best") + ".");
+              arg_parser.option_value("--hvr-snapshots-best") + ".");
         }
 
         ofs.close();
       } else {
         throw std::runtime_error(
-            "File " + arg_parser.option_value("--hypervolume-snapshots-best") +
+            "File " + arg_parser.option_value("--hvr-snapshots-best") +
             " not created.");
       }
 
       ifs.close();
     } else {
       throw std::runtime_error(
-          "H File " +
-          arg_parser.option_value("--hypervolume-snapshots-" +
+          "File " +
+          arg_parser.option_value("--hvr-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
     }
   }
 
-  if (arg_parser.option_exists("--hypervolume-snapshots-median") &&
-      arg_parser.option_exists("--hypervolume-snapshots-" +
+  if (arg_parser.option_exists("--hvr-snapshots-median") &&
+      arg_parser.option_exists("--hvr-snapshots-" +
                                std::to_string(index_median))) {
     std::ifstream ifs;
-    ifs.open(arg_parser.option_value("--hypervolume-snapshots-" +
+    ifs.open(arg_parser.option_value("--hvr-snapshots-" +
                                      std::to_string(index_median)),
              std::ios::binary);
 
     if (ifs.is_open()) {
       std::ofstream ofs;
-      ofs.open(arg_parser.option_value("--hypervolume-snapshots-median"),
+      ofs.open(arg_parser.option_value("--hvr-snapshots-median"),
                std::ios::binary);
 
       if (ofs.is_open()) {
@@ -394,22 +389,21 @@ int main(int argc, char* argv[]) {
         if (ofs.eof() || ofs.fail() || ofs.bad()) {
           throw std::runtime_error(
               "Error writing file " +
-              arg_parser.option_value("--hypervolume-snapshots-median") + ".");
+              arg_parser.option_value("--hvr-snapshots-median") + ".");
         }
 
         ofs.close();
       } else {
         throw std::runtime_error(
-            "File " +
-            arg_parser.option_value("--hypervolume-snapshots-median") +
+            "File " + arg_parser.option_value("--hvr-snapshots-median") +
             " not created.");
       }
 
       ifs.close();
     } else {
       throw std::runtime_error(
-          "I File " +
-          arg_parser.option_value("--hypervolume-snapshots-" +
+          "File " +
+          arg_parser.option_value("--hvr-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
     }
@@ -537,7 +531,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "J File " +
+          "File " +
           arg_parser.option_value("--num-non-dominated-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -578,7 +572,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "K File " +
+          "File " +
           arg_parser.option_value("--num-non-dominated-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -618,7 +612,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "L File " +
+          "File " +
           arg_parser.option_value("--num-fronts-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -657,7 +651,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "M File " +
+          "File " +
           arg_parser.option_value("--num-fronts-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -784,7 +778,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "N File " +
+          "File " +
           arg_parser.option_value("--num-elites-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -823,7 +817,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "O File " +
+          "File " +
           arg_parser.option_value("--num-elites-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");
@@ -862,7 +856,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "P File " +
+          "File " +
           arg_parser.option_value("--num-mutants-snapshots-" +
                                   std::to_string(index_best)) +
           " not found.");
@@ -895,7 +889,7 @@ int main(int argc, char* argv[]) {
       ifs.close();
     } else {
       throw std::runtime_error(
-          "Q File " +
+          "File " +
           arg_parser.option_value("--num-mutants-snapshots-" +
                                   std::to_string(index_median)) +
           " not found.");

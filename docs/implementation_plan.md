@@ -18,13 +18,17 @@ In [hypervolume_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hy
 
 In [reference_pareto_front_and_point_calculator_exec.cpp:L23](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp#L23), the reference point is initialized to `lowest()` and updated via `max(value)` for every objective. For maximization objectives (expected return, Sharpe ratio), the *worst* bound should be the *minimum*, not the maximum. The `motsp_irace` reference avoids this by using `instance.primal_bound` (pre-computed per-instance).
 
-**Fix:** For MAXIMIZE objectives, track the minimum; for MINIMIZE, track the maximum.
+This also silently truncates IGD+. With the reference point holding the *best* value on objectives 0 and 2, `modified_distance` returns `delta = max(0, r[i] − p[i]) = 0` on those dimensions for every reference-front point, so `reference_igd_plus` is built from **2 of the 4 objectives**. Existing IGD+ numbers are structurally wrong, not off by a constant factor.
 
-### BUG 3 — 5% front perturbation must be removed
+**Fix:** For MAXIMIZE objectives, track the minimum; for MINIMIZE, track the maximum. Track the opposite bound too, since BUG 3's fix needs the attained range.
 
-In [reference_pareto_front_and_point_calculator_exec.cpp:L126-134](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp#L126), `mopop` applies a 5% perturbation to the reference front (branching on sense: `*= 0.95` for MIN, `*= 1.05` for MAX). This perturbation is sign-unsafe near zero and distorts the empirical reference front geometry.
+### BUG 3 — 5% front perturbation is sign-unsafe
 
-**Fix:** Remove the 5% perturbation entirely. Use the pooled nondominated reference front as-is.
+In [reference_pareto_front_and_point_calculator_exec.cpp:L126-134](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp#L126), `mopop` applied a 5% perturbation to the reference front (branching on sense: `*= 0.95` for MIN, `*= 1.05` for MAX). Objectives 0 (expected return) and 2 (ratio) take negative values on daily data, so `*= 1.05` moved a maximization objective *backwards*. It also distorts the empirical reference front geometry, and `plotter_pareto.py` draws that file.
+
+Note that `motsp_irace` has the same perturbation ([reference_pareto_front_calculator_exec.cpp:L126-131](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/src/exec/reference_pareto_front_calculator_exec.cpp#L126), uniform `value *= 0.95`, safe there because all objectives minimize and all TSP costs are positive). It is load-bearing: it makes the reference front strictly dominate every attained point, which keeps HVR and NIGD+ inside `[0, 1]`. Deleting it outright pins HVR at exactly 1.0 for whichever run contributed the front and drops every extreme point to a zero volume contribution.
+
+**Fix:** Remove the perturbation from the *front* and pad the *reference point* outward instead, by 5% of each objective's attained range: `ref[i] = worst[i] ± 0.05 · |best[i] − worst[i]|`. Additive on the range, so it is sign-safe; it fabricates no front points, keeps extreme points contributing positive volume, and keeps both indicators in `[0, 1]`.
 
 ### BUG 4 — Downloader docstrings incorrectly say "annualized"
 
@@ -40,7 +44,8 @@ In [reference_pareto_front_and_point_calculator_exec.cpp:L126-134](file:///home/
 |---|---|---|---|
 | Instance loading | Single `--instance` file | Two files: `--expected-returns-filename` + `--covariance-filename` | Keep two-file approach |
 | Objectives | All minimization | Mixed: MAX, MIN, MAX, MIN | Same (4 objectives, mixed) |
-| Metric executables | `hypervolume_ratio_calculator_exec`, `normalized_modified_generational_distance_calculator_exec` | `hypervolume_calculator_exec`, `modified_generational_distance_calculator_exec` | Rename to match `motsp_irace` naming |
+| Metric executables | `hypervolume_calculator_exec` (raw, for irace) **and** `hypervolume_ratio_calculator_exec`, `normalized_modified_generational_distance_calculator_exec` | `hypervolume_calculator_exec`, `modified_generational_distance_calculator_exec` | Same three as `motsp_irace`: rename the two, add the raw HV exec |
+| HV reference point | `instance.primal_bound`, derived from the instance | Pooled from all runs, `max` for every objective | Pooled worst per sense, padded 5% of range; frozen per instance for irace |
 | Metric CLI flags | `--hvr-*`, `--nigd-plus-*` | `--hypervolume-*`, `--igd-plus-*` | Rename to `--hvr-*`, `--nigd-plus-*` |
 | Reference front | Separate `reference_pareto_front_calculator_exec` (no point file) | Combined `reference_pareto_front_and_point_calculator_exec` (outputs both front + point) | Keep combined exec, but fix the reference point logic |
 | Seeds | 10 seeds | 3 seeds | 10 seeds |
@@ -164,59 +169,69 @@ instances/ibov_2011/
 
 ---
 
-## Phase 3 — Metric Bug Fixes and Renaming
+## Phase 3 — Metric Bug Fixes and Renaming ✅ DONE
 
-**Objective:** Fix the 4 confirmed bugs, rename executables/flags to match `motsp_irace`, remove hardcoded `4`.
+**Objective:** Fix the 4 confirmed bugs, rename executables/flags to match `motsp_irace`, remove hardcoded `4`, and ship the raw-hypervolume executable Phase 5 needs.
 
-### Files to modify
+### Files modified
 
-#### [MODIFY] [hypervolume_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hypervolume_calculator_exec.cpp)
+#### [MODIFY] `hypervolume_calculator_exec.cpp` → [hypervolume_ratio_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hypervolume_ratio_calculator_exec.cpp)
 
-- **Rename** → `hypervolume_ratio_calculator_exec.cpp`
-- Fix line 34: `hv.compute(reference_point)` → `hv.compute(reference_point_prime)`
-- Replace all `4` with `senses.size()` or `instance.senses.size()`
-- Rename CLI flags: `--hypervolume-*` → `--hvr-*`
+- Fixed `hv.compute(reference_point)` → `hv.compute(reference_point_prime)` (BUG 1)
+- Replaced all `4` with `instance.senses.size()`
+- Renamed CLI flags: `--hypervolume-*` → `--hvr-*`
+- Guarded both output loops with `option_exists`, matching `motsp_irace`. Required because `Argument_Parser::option_value` returns `""` for a missing flag, and `ofs.open("")` then throws `File  not created.`
+- Empty candidate front returns `0.0` instead of reaching pagmo, which throws on an empty front
+- Assert tolerance `<= 1.0 + 1e-9`; `CARGS` carries no `-DNDEBUG`, so an exact comparison aborts real runs on rounding
 
-#### [MODIFY] [modified_generational_distance_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/modified_generational_distance_calculator_exec.cpp)
+#### [NEW] [hypervolume_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hypervolume_calculator_exec.cpp)
 
-- **Rename** → `normalized_modified_generational_distance_calculator_exec.cpp`
-- Replace all `4` with `senses.size()`
-- Rename CLI flags: `--igd-plus-*` → `--nigd-plus-*`
+Raw hypervolume, mirroring `motsp_irace`'s exec of the same name. Takes `--reference-point` and **no `--reference-pareto`**, which is what makes it usable as an irace cost. `mopop` has no `Instance::primal_bound`, so the point comes from a file.
+
+#### [MODIFY] `modified_generational_distance_calculator_exec.cpp` → [normalized_modified_generational_distance_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/normalized_modified_generational_distance_calculator_exec.cpp)
+
+- Replaced all `4` with `instance.senses.size()`
+- Renamed CLI flags: `--igd-plus-*` → `--nigd-plus-*`; fixed the usage string, which advertised a `--instance` flag this exec never accepted
+- Empty-front guard before `front.front()`, which was undefined behaviour
+- Assert tolerance `<= 1.0 + 1e-9`
+
+The name is a misnomer — the metric is IGD+ — but `motsp_irace` uses the same one and cross-project consistency wins. Thesis text should say IGD+.
 
 #### [MODIFY] [reference_pareto_front_and_point_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp)
 
-- Fix reference point: for MAXIMIZE objectives, initialize to `max()` and track minimum; for MINIMIZE, initialize to `lowest()` and track maximum
-- Remove the 5% perturbation entirely (lines 126-134)
-- Replace hardcoded `4` with dynamic objective count
+- Reference point tracks worst *and* best per sense (BUG 2), then pads the worst outward by 5% of the attained range (BUG 3), with fallbacks for a zero range and for an all-zero objective
+- Removed the 5% front perturbation; the reference front is written as pooled and nondominated
+- Dropped the dead `--hypervolume-*` clauses from the `num_solvers` discovery loop — this exec is never passed them
+- Replaced hardcoded `4` with `instance.senses.size()`
 
 #### [MODIFY] [results_aggregator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/results_aggregator_exec.cpp)
 
-- Rename all `--hypervolume*` flags → `--hvr*`
-- Rename `--igd-plus*` → `--nigd-plus*`
-- Rename `--hypervolumes` → `--hvrs`, `--igd-pluses` → `--nigd-pluses`
+- Renamed flags to `--hvr*` / `--nigd-plus*`, matching `motsp_irace` exactly
+- Stripped the stray debug prefixes from exception messages (`"A File "` … `"Q File "`)
 
+#### [MODIFY] [Makefile](file:///home/luishpmendes/mopop/Makefile), [run.sh](file:///home/luishpmendes/mopop/run.sh)
 
-#### [MODIFY] [Makefile](file:///home/luishpmendes/mopop/Makefile)
+- Link rules and phony aliases for all three metric execs; `metrics_test` added to `tests`
+- `run.sh` flag sync only — directory renames stay in Phase 4. Also fixed a pre-existing mismatch: `run.sh` passed `--igd-pluses-statistics` while the aggregator read `--igd-plus-statistics`, so the IGD+ statistics file was silently never written
 
-- Update all targets for renamed executables
+#### [NEW] [src/test/metrics_test.cpp](file:///home/luishpmendes/mopop/src/test/metrics_test.cpp)
 
-### Tasks
+The metric formulas live inside exec `main()` translation units and cannot be linked against, so the test mirrors them over an analytic mixed-sense fixture and asserts closed-form values (HV `0.3524`, `reference_igd_plus = (√8.9 + √35.3)/2`), plus the negative-value and zero-range reference point cases. Keep the copies in sync when touching the execs.
 
-1. Fix HVR reference point bug (BUG 1)
-2. Fix reference point construction for mixed-sense (BUG 2)
-3. Remove 5% perturbation from reference front calculator (BUG 3)
-4. Replace all hardcoded `4` with `senses.size()`
-5. Rename executables and CLI flags
-6. Update Makefile targets
-7. Add unit test with known mixed-sense analytical fixture
+### Acceptance criteria — all met
 
-### Acceptance criteria
+- `make clean && make all` compiles all three metric execs and `metrics_test` passes
+- Analytic mixed-sense HVR fixture matches the expected value
+- Identical candidate = reference → HVR = 1.0, NIGD+ = 0.0 (verified on real solver output)
+- No hardcoded `4` in the metric executables
+- Raw HV exec runs with only `--pareto-0` / `--hypervolume-0`, the irace invocation
 
-- `make clean && make all` compiles renamed executables
-- Analytical mixed-sense HVR fixture matches expected value
-- Identical candidate = reference → HVR = 1.0
-- No hardcoded `4` in metric executables
-- `motsp_irace`-compatible output on all-minimization fixture
+> [!NOTE]
+> The original criterion "`motsp_irace`-compatible output on an all-minimization fixture" was dropped. With a range-padded reference point, `mopop` will not match `motsp_irace`, which uses `instance.primal_bound` and a perturbed front. The analytic fixture is the real check.
+
+### Deliberately out of scope
+
+Hardcoded `4` outside the metric execs — `Instance::is_valid()`, `get_nobj()` in the five pagmo `problem.cpp` files, `Decoder`'s value buffers, `Solution`'s `value(4, 0.0)`. Changing those needs a coordinated pass over all six solvers and their tests.
 
 ---
 
@@ -344,12 +359,15 @@ Each `{solver}-target-runner.sh` must:
 1. Parse irace args: `$1`=config_id, `$2`=instance_id, `$3`=seed, `$4`=instance_path
 2. Map instance path to `instances/{instance}/train/expected_returns.csv` and `covariance_matrix.csv`
 3. Run solver for 60s with `--pareto` output to tmpdir
-4. Compute raw hypervolume using `hypervolume_calculator_exec` (same approach as `motsp_irace`)
+4. Compute raw hypervolume using `hypervolume_calculator_exec` (the Phase 3 raw exec, same approach as `motsp_irace`), passing the instance's **frozen** reference point
 5. Print `cost elapsed_time` where `cost = -HV` (negated, since irace minimizes) or `Inf` on failure
 6. Clean tmpdir via `trap`
 
 > [!NOTE]
-> Both `motsp_irace` and `mopop` use **raw negated hypervolume** (`-HV`) as the irace cost. The `hypervolume_calculator_exec` already handles mixed-sense objectives by negating maximization objectives internally before computing the hypervolume via pagmo.
+> Both `motsp_irace` and `mopop` use **raw negated hypervolume** (`-HV`) as the irace cost. `hypervolume_calculator_exec` handles mixed-sense objectives by negating maximization objectives internally before computing the hypervolume via pagmo.
+
+> [!IMPORTANT]
+> Unlike `motsp_irace`, which derives its reference point from `instance.primal_bound`, `mopop` reads it from a file. Each training instance therefore needs a reference point computed **once** from a pilot pool and then frozen (`instances/ibov_{year}/reference_point.txt`). A point recomputed per candidate would make the cost depend on which configurations happen to be in the pool, so costs would not be comparable across configurations. Because the Phase 3 reference point is padded 5% beyond the pilot pool's attained range, a later run that slightly exceeds the pilot pool still lands inside it rather than making pagmo reject the front.
 
 ### Tuning instance split
 

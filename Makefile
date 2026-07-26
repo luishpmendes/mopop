@@ -43,6 +43,17 @@ $(BIN)/test/solution_test : $(BIN)/instance/instance.o \
 
 solution_test : $(BIN)/test/solution_test
 
+$(BIN)/test/metrics_test : $(BIN)/instance/instance.o \
+													 $(BIN)/test/metrics_test.o
+	@echo "--> Linking objects..."
+	$(CPP) -o $@ $^ $(CARGS) $(INC)
+	@echo
+	@echo "--> Running test..."
+	$(BIN)/test/metrics_test
+	@echo
+
+metrics_test : $(BIN)/test/metrics_test
+
 $(BIN)/test/nsga2_solver_test : $(BIN)/instance/instance.o \
 																$(BIN)/solution/solution.o \
 																$(BIN)/solver/solver.o \
@@ -231,14 +242,23 @@ $(BIN)/exec/hypervolume_calculator_exec : $(BIN)/instance/instance.o \
 
 hypervolume_calculator_exec : $(BIN)/exec/hypervolume_calculator_exec
 
-$(BIN)/exec/modified_generational_distance_calculator_exec : $(BIN)/instance/instance.o \
-																														 $(BIN)/utils/argument_parser.o \
-																														 $(BIN)/exec/modified_generational_distance_calculator_exec.o
+$(BIN)/exec/hypervolume_ratio_calculator_exec : $(BIN)/instance/instance.o \
+																								$(BIN)/utils/argument_parser.o \
+																								$(BIN)/exec/hypervolume_ratio_calculator_exec.o
 	@echo "--> Linking objects..."
 	$(CPP) -o $@ $^ $(CARGS) $(INC)
 	@echo
 
-modified_generational_distance_calculator_exec : $(BIN)/exec/modified_generational_distance_calculator_exec
+hypervolume_ratio_calculator_exec : $(BIN)/exec/hypervolume_ratio_calculator_exec
+
+$(BIN)/exec/normalized_modified_generational_distance_calculator_exec : $(BIN)/instance/instance.o \
+																																				$(BIN)/utils/argument_parser.o \
+																																				$(BIN)/exec/normalized_modified_generational_distance_calculator_exec.o
+	@echo "--> Linking objects..."
+	$(CPP) -o $@ $^ $(CARGS) $(INC)
+	@echo
+
+normalized_modified_generational_distance_calculator_exec : $(BIN)/exec/normalized_modified_generational_distance_calculator_exec
 
 $(BIN)/exec/results_aggregator_exec : $(BIN)/utils/argument_parser.o \
 																			$(BIN)/exec/results_aggregator_exec.o
@@ -250,6 +270,7 @@ results_aggregator_exec : $(BIN)/exec/results_aggregator_exec
 
 tests : instance_test \
 				solution_test \
+				metrics_test \
 				nsga2_solver_test \
 				nspso_solver_test \
 				moead_solver_test \
@@ -265,7 +286,8 @@ execs : nsga2_solver_exec \
 				nsbrkga_solver_exec \
 				reference_pareto_front_and_point_calculator_exec \
 				hypervolume_calculator_exec \
-				modified_generational_distance_calculator_exec \
+				hypervolume_ratio_calculator_exec \
+				normalized_modified_generational_distance_calculator_exec \
 				results_aggregator_exec
 
 all : tests execs

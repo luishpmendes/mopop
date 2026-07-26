@@ -111,7 +111,7 @@ eval $command
 
 wait
 
-command="${path}/bin/exec/hypervolume_calculator_exec "
+command="${path}/bin/exec/hypervolume_ratio_calculator_exec "
 command+="--expected-returns-filename ${path}/${expected_returns} "
 command+="--covariance-filename ${path}/${covariance} "
 command+="--reference-pareto ${path}/pareto/pareto.txt "
@@ -121,8 +121,8 @@ for solver in ${solvers[@]}; do
   for seed in ${seeds[@]}; do
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
-    command+="--hypervolume-${j} ${path}/hypervolume/${solver}_${seed}.txt "
-    command+="--hypervolume-snapshots-${j} ${path}/hypervolume_snapshots/${solver}_${seed}.txt "
+    command+="--hvr-${j} ${path}/hypervolume/${solver}_${seed}.txt "
+    command+="--hvr-snapshots-${j} ${path}/hypervolume_snapshots/${solver}_${seed}.txt "
     j=$((j+1))
   done
 done
@@ -131,7 +131,7 @@ eval $command
 
 wait
 
-command="${path}/bin/exec/modified_generational_distance_calculator_exec "
+command="${path}/bin/exec/normalized_modified_generational_distance_calculator_exec "
 command+="--expected-returns-filename ${path}/${expected_returns} "
 command+="--covariance-filename ${path}/${covariance} "
 command+="--reference-pareto ${path}/pareto/pareto.txt "
@@ -141,8 +141,8 @@ for solver in ${solvers[@]}; do
   for seed in ${seeds[@]}; do
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
-    command+="--igd-plus-${j} ${path}/igd_plus/${solver}_${seed}.txt "
-    command+="--igd-plus-snapshots-${j} ${path}/igd_plus_snapshots/${solver}_${seed}.txt "
+    command+="--nigd-plus-${j} ${path}/igd_plus/${solver}_${seed}.txt "
+    command+="--nigd-plus-snapshots-${j} ${path}/igd_plus_snapshots/${solver}_${seed}.txt "
     j=$((j+1))
   done
 done
@@ -161,16 +161,16 @@ i=0
 
 for solver in ${solvers[@]}; do
   command="${path}/bin/exec/results_aggregator_exec "
-  command+="--hypervolumes ${path}/hypervolume/${solver}.txt "
-  command+="--hypervolume-statistics ${path}/hypervolume/${solver}_stats.txt "
-  command+="--igd-pluses ${path}/igd_plus/${solver}.txt "
-  command+="--igd-pluses-statistics ${path}/igd_plus/${solver}_stats.txt "
+  command+="--hvrs ${path}/hypervolume/${solver}.txt "
+  command+="--hvr-statistics ${path}/hypervolume/${solver}_stats.txt "
+  command+="--nigd-pluses ${path}/igd_plus/${solver}.txt "
+  command+="--nigd-plus-statistics ${path}/igd_plus/${solver}_stats.txt "
   command+="--statistics-best ${path}/statistics/${solver}_best.txt "
   command+="--statistics-median ${path}/statistics/${solver}_median.txt "
   command+="--pareto-best ${path}/pareto/${solver}_best.txt "
   command+="--pareto-median ${path}/pareto/${solver}_median.txt "
-  command+="--hypervolume-snapshots-best ${path}/hypervolume_snapshots/${solver}_best.txt "
-  command+="--hypervolume-snapshots-median ${path}/hypervolume_snapshots/${solver}_median.txt "
+  command+="--hvr-snapshots-best ${path}/hypervolume_snapshots/${solver}_best.txt "
+  command+="--hvr-snapshots-median ${path}/hypervolume_snapshots/${solver}_median.txt "
   command+="--best-solutions-snapshots-best ${path}/best_solutions_snapshots/${solver}_best_ "
   command+="--best-solutions-snapshots-median ${path}/best_solutions_snapshots/${solver}_median_ "
   command+="--num-non-dominated-snapshots-best ${path}/num_non_dominated_snapshots/${solver}_best.txt "
@@ -187,10 +187,10 @@ for solver in ${solvers[@]}; do
   for seed in ${seeds[@]}; do
     command+="--statistics-${j} ${path}/statistics/${solver}_${seed}.txt "
     command+="--pareto-${j} ${path}/pareto/${solver}_${seed}.txt "
-    command+="--hypervolume-${j} ${path}/hypervolume/${solver}_${seed}.txt "
-    command+="--hypervolume-snapshots-${j} ${path}/hypervolume_snapshots/${solver}_${seed}.txt "
-    command+="--igd-plus-${j} ${path}/igd_plus/${solver}_${seed}.txt "
-    command+="--igd-plus-snapshots-${j} ${path}/igd_plus_snapshots/${solver}_${seed}.txt "
+    command+="--hvr-${j} ${path}/hypervolume/${solver}_${seed}.txt "
+    command+="--hvr-snapshots-${j} ${path}/hypervolume_snapshots/${solver}_${seed}.txt "
+    command+="--nigd-plus-${j} ${path}/igd_plus/${solver}_${seed}.txt "
+    command+="--nigd-plus-snapshots-${j} ${path}/igd_plus_snapshots/${solver}_${seed}.txt "
     command+="--best-solutions-snapshots-${j} ${path}/best_solutions_snapshots/${solver}_${seed}_ "
     command+="--num-non-dominated-snapshots-${j} ${path}/num_non_dominated_snapshots/${solver}_${seed}.txt "
     command+="--populations-snapshots-${j} ${path}/populations_snapshots/${solver}_${seed}_ "
