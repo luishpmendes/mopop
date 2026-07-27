@@ -1,111 +1,11 @@
-# Revised Plan: Multi-Instance IBOVESPA Experiments for `mopop`
+# Implementation Plan: Multi-Instance IBOVESPA Experiments for `mopop`
 
 ## Goal
 
-Extend `mopop` from its current single-instance setup into a reproducible 10-instance experimentation pipeline (`ibov_2011`–`ibov_2020`), with correct metrics, `irace` tuning, and multi-instance result analysis. Mirror the proven patterns from `motsp_irace`.
-
----
-
-## Confirmed Bugs and Blockers
-
-### BUG 1 — Hypervolume passes untransformed reference point to pagmo
-
-In [hypervolume_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hypervolume_calculator_exec.cpp#L34), `compute_hypervolume()` negates the front and builds `reference_point_prime`, but then calls `hv.compute(reference_point)` instead of `hv.compute(reference_point_prime)`. The `motsp_irace` version at [hypervolume_ratio_calculator_exec.cpp:L33](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/src/exec/hypervolume_ratio_calculator_exec.cpp#L33) correctly passes `reference_point_prime`.
-
-**Fix:** Change line 34 to `return hv.compute(reference_point_prime);`
-
-### BUG 2 — Reference point uses max for all objectives (wrong for maximization)
-
-In [reference_pareto_front_and_point_calculator_exec.cpp:L23](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp#L23), the reference point is initialized to `lowest()` and updated via `max(value)` for every objective. For maximization objectives (expected return, Sharpe ratio), the *worst* bound should be the *minimum*, not the maximum. The `motsp_irace` reference avoids this by using `instance.primal_bound` (pre-computed per-instance).
-
-This also silently truncates IGD+. With the reference point holding the *best* value on objectives 0 and 2, `modified_distance` returns `delta = max(0, r[i] − p[i]) = 0` on those dimensions for every reference-front point, so `reference_igd_plus` is built from **2 of the 4 objectives**. Existing IGD+ numbers are structurally wrong, not off by a constant factor.
-
-**Fix:** For MAXIMIZE objectives, track the minimum; for MINIMIZE, track the maximum. Track the opposite bound too, since BUG 3's fix needs the attained range.
-
-### BUG 3 — 5% front perturbation is sign-unsafe
-
-In [reference_pareto_front_and_point_calculator_exec.cpp:L126-134](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp#L126), `mopop` applied a 5% perturbation to the reference front (branching on sense: `*= 0.95` for MIN, `*= 1.05` for MAX). Objectives 0 (expected return) and 2 (ratio) take negative values on daily data, so `*= 1.05` moved a maximization objective *backwards*. It also distorts the empirical reference front geometry, and `plotter_pareto.py` draws that file.
-
-Note that `motsp_irace` has the same perturbation ([reference_pareto_front_calculator_exec.cpp:L126-131](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/src/exec/reference_pareto_front_calculator_exec.cpp#L126), uniform `value *= 0.95`, safe there because all objectives minimize and all TSP costs are positive). It is load-bearing: it makes the reference front strictly dominate every attained point, which keeps HVR and NIGD+ inside `[0, 1]`. Deleting it outright pins HVR at exactly 1.0 for whichever run contributed the front and drops every extreme point to a zero volume contribution.
-
-**Fix:** Remove the perturbation from the *front* and pad the *reference point* outward instead, by 5% of each objective's attained range: `ref[i] = worst[i] ± 0.05 · |best[i] − worst[i]|`. Additive on the range, so it is sign-safe; it fabricates no front points, keeps extreme points contributing positive volume, and keeps both indicators in `[0, 1]`.
-
-### BUG 4 — Downloader docstrings incorrectly say "annualized"
-
-[downloader.py](file:///home/luishpmendes/mopop/downloader.py) computes `returns_df.mean()` and `returns_df.cov()` without annualizing. The docstrings incorrectly say "annualized" but the code computes daily statistics, which is the intended behavior.
-
-**Fix:** Fix the docstrings to say "daily" instead of "annualized". Do not add annualization.
-
-Resolved by deleting `downloader.py`; `generate_instances.py` documents daily statistics throughout.
-
-### BUG 5 — Population initialization writes out-of-range chromosomes (all six solvers) ⚠️ OPEN
-
-Found while smoke-testing the Phase 2 instances. Introduced by commit `6b6aa16`
-("Enhance population initialization … to prioritize assets with positive expected
-returns"), present in all six `*_solver.cpp` files. Two defects compound:
-
-```cpp
-std::vector<unsigned> positive_expected_returns_indexes(this->instance.num_assets);
-for (unsigned j = 0; j < this->instance.num_assets; j++) {
-  if (this->instance.expected_returns[j] > 0.0) {
-    positive_expected_returns_indexes.push_back(j);   // (1)
-  }
-}
-...
-x[l] = this->instance.expected_returns[l];            // (2)
-sum += x[l];
-...
-x[k] /= sum;
-```
-
-1. The vector is **sized** to `num_assets`, filling it with `num_assets` zeros,
-   and then appended to. Every phantom leading entry points at asset 0,
-   regardless of that asset's expected return.
-2. Raw expected returns are used as weights. They may be negative, so `sum` can
-   be near zero or negative, and `x[k] /= sum` then yields chromosome entries
-   above 1 or below 0.
-
-`Decoder::decode` and the `Solution` constructor both normalize by the weight
-sum, which cannot repair a vector containing negatives: the normalized weights
-come out greater than 1 or negative, so the portfolio variance exceeds the
-largest single-asset variance and the Shannon entropy goes negative.
-
-Reproduced on `ibov_2020` (5 s, NS-BRKGA): 66 of 100 archived solutions have
-negative entropy, and one reports `w'Σw = 0.0206` against a theoretical maximum
-of `2.51e-3` for any normalized non-negative weight vector. `ibov_2011` shows
-none — its alphabetically first asset, BBAS3, has a *positive* mean, while
-`ibov_2020`'s ABEV3 has a *negative* one. That sign is exactly the discriminator
-the defect predicts.
-
-The pre-existing legacy instance masks the problem differently, emitting
-`0 0 -nan 0` rows: an all-zero chromosome leaves `total_weight == 0`, the
-normalization guard `if (total_weight > 0.0)` skips, and `value[0] / sqrt(value[1])`
-evaluates `0.0 / 0.0`.
-
-**Fix (not yet applied):** construct the index vector empty (`reserve`, not sized),
-restrict it to strictly positive expected returns, and derive weights from a
-non-negative quantity so the normalizing sum is strictly positive. Add a guard so
-`value[2]` is not computed from a zero variance. This is solver-side work
-touching all six solvers and their tests, and belongs with the hardcoded-`4`
-cleanup Phase 3 deferred. **Any experiment run before this is fixed is
-compromised for NS-BRKGA and probably for the other five.**
-
----
-
-## Key Differences from `motsp_irace`
-
-| Aspect | `motsp_irace` | `mopop` (current) | `mopop` (target) |
-|---|---|---|---|
-| Instance loading | Single `--instance` file | Two files: `--expected-returns-filename` + `--covariance-filename` | Keep two-file approach |
-| Objectives | All minimization | Mixed: MAX, MIN, MAX, MIN | Same (4 objectives, mixed) |
-| Metric executables | `hypervolume_calculator_exec` (raw, for irace) **and** `hypervolume_ratio_calculator_exec`, `normalized_modified_generational_distance_calculator_exec` | `hypervolume_calculator_exec`, `modified_generational_distance_calculator_exec` | Same three as `motsp_irace`: rename the two, add the raw HV exec |
-| HV reference point | `instance.primal_bound`, derived from the instance | Pooled from all runs, `max` for every objective | Pooled worst per sense, padded 5% of range; frozen per instance for irace |
-| Metric CLI flags | `--hvr-*`, `--nigd-plus-*` | `--hypervolume-*`, `--igd-plus-*` | Rename to `--hvr-*`, `--nigd-plus-*` |
-| Reference front | Separate `reference_pareto_front_calculator_exec` (no point file) | Combined `reference_pareto_front_and_point_calculator_exec` (outputs both front + point) | Keep combined exec, but fix the reference point logic |
-| Seeds | 10 seeds | 3 seeds | 10 seeds |
-| Hardcoded `4` | Uses `instance.num_objectives` | Hardcoded `4` everywhere | Replace with `instance.senses.size()` |
-| irace target runner | Uses raw hypervolume (negated) as cost | N/A | Use raw hypervolume (negated) as cost |
-| Directory structure | Flat (`hvr/`, `nigd_plus/`) | Flat (`hypervolume/`, `igd_plus/`) | Instance-prefixed flat (like `motsp_irace`) |
+Extend `mopop` from its current single-instance setup into a reproducible
+10-instance experimentation pipeline (`ibov_2011`–`ibov_2020`), with correct
+solvers, `irace` tuning, and multi-instance result analysis. Mirror the proven
+patterns from `motsp_irace`.
 
 ---
 
@@ -114,283 +14,204 @@ compromised for NS-BRKGA and probably for the other five.**
 | Decision | Value |
 |---|---|
 | Algorithms | NSGA-II, NSPSO, MOEA/D-DE, MHACO, IHS, NS-BRKGA |
-| Seeds | 10 (same as `motsp_irace`: 305089489, 511812191, 608055156, 467424509, 944441939, 414977408, 819312498, 562386085, 287613914, 755772793) |
-| Tuning time limit | 60 s |
+| Seeds | 10: 305089489, 511812191, 608055156, 467424509, 944441939, 414977408, 819312498, 562386085, 287613914, 755772793 |
+| Tuning time limit | 60 s per candidate |
 | Final-run time limit | 3600 s |
 | Instances | `ibov_2011`–`ibov_2020` (10 rolling windows) |
 | Training window | 5 calendar years |
 | OOS window | Following calendar year |
 | Ticker source | `ibovespa_tickers_2011_2025/tickers_{year}.csv` |
-| Annualization | None (daily statistics) |
+| Statistics | Daily (no annualization) |
+| irace train split | `ibov_2011`–`ibov_2017` (7 instances) |
+| irace holdout split | `ibov_2018`–`ibov_2020` (3 instances) |
+| Population size factor | `population_size = factor × 4` (same as `motsp_irace`) |
 
 ---
 
-## Phase 1 — Build Portability and Baseline
+## Completed Work
 
-**Objective:** Make the build portable and record a deterministic baseline.
+### Phase 2 — Instance Generation ✅
 
-### Files to modify
+`scripts/generate_instances.py` and `scripts/validate_instances.py` exist. All
+ten instances (`instances/ibov_2011/` through `instances/ibov_2020/`) build from
+committed cache and validate. Each instance has `train/` and `oos/`
+subdirectories with `expected_returns.csv` and `covariance_matrix.csv`, plus
+`metadata.json` and `tickers.csv`. Instances are 28–47 assets; 65 of 165 unique
+tickers are unavailable at Yahoo Finance. A rebuild from cache inside an
+isolated network namespace (`unshare -rn`) is byte-identical.
 
-#### [MODIFY] [Makefile](file:///home/luishpmendes/mopop/Makefile)
+### Phase 3 — Metric Bug Fixes and Renaming ✅
 
-- Add `make check` target (keep existing hardcoded paths as-is) that runs all tests
+Four bugs fixed, executables renamed:
 
-#### [NEW] `requirements.txt`
+| Bug | Fix |
+|---|---|
+| BUG 1: `hv.compute(reference_point)` | → `hv.compute(reference_point_prime)` |
+| BUG 2: Reference point used `max` for all objectives | Tracks worst per sense |
+| BUG 3: 5% front perturbation sign-unsafe | Removed; pads reference *point* 5% of attained range |
+| BUG 4: Docstrings say "annualized" | Resolved by deleting `downloader.py` |
 
-- Pin `yfinance`, `pandas`, `numpy`, `matplotlib`, `seaborn`, `scipy`
+Three metric executables renamed: `hypervolume_ratio_calculator_exec` (HVR),
+`normalized_modified_generational_distance_calculator_exec` (NIGD+),
+`hypervolume_calculator_exec` (raw HV for irace). CLI flags renamed to
+`--hvr-*` and `--nigd-plus-*`. Hardcoded `4` eliminated from metric execs.
+`metrics_test.cpp` pins formulas to analytic values. `run.sh` flags updated.
 
-#### [NEW] `tests/fixtures/small_instance/`
+### IBOVESPA Ticker Data ✅
 
-- Committed 5-asset fixture: `expected_returns.csv`, `covariance_matrix.csv`
-- Known deterministic values for smoke testing without network
+`ibovespa_tickers_2011_2025/` contains `tickers_{2011..2025}.csv` plus
+`manifest.json`. `cache/prices/` is committed (165 ticker CSVs). This data is
+the sole input to `generate_instances.py build` and must not be re-fetched.
+
+---
+
+## BUG 5 — Population Initialization (⚠️ OPEN, BLOCKS ALL EXPERIMENTS)
+
+Present in all six `*_solver.cpp` files (commit `6b6aa16`). Two compounding
+defects:
+
+1. `std::vector<unsigned> positive_expected_returns_indexes(num_assets)` allocates
+   `num_assets` zeros, then `push_back` appends — phantom entries all point at
+   asset 0.
+2. Raw expected returns used as chromosome weights; negative sums yield entries
+   outside `[0, 1]`.
+
+**Effect:** Negative Shannon entropy, portfolio variance above single-asset
+maximum. Reproduced on `ibov_2020` (66/100 NS-BRKGA solutions have negative
+entropy). `ibov_2011` is unaffected only because its first asset has positive
+mean.
+
+**Any experiment run before this is fixed is compromised.**
+
+---
+
+## Phase 4A — Fix BUG 5
+
+**Objective:** Fix the population initialization across all six solvers so that
+initial chromosomes are well-formed `[0, 1]` vectors and the resulting
+portfolios have non-negative weights summing to 1.
+
+### Affected files (6 solvers)
+
+| File | Lines (approx) |
+|---|---|
+| [nsga2_solver.cpp](file:///home/luishpmendes/mopop/src/solver/nsga2/nsga2_solver.cpp) | 27–88 |
+| [nspso_solver.cpp](file:///home/luishpmendes/mopop/src/solver/nspso/nspso_solver.cpp) | 27–89 |
+| [moead_solver.cpp](file:///home/luishpmendes/mopop/src/solver/moead/moead_solver.cpp) | 27–89 |
+| [mhaco_solver.cpp](file:///home/luishpmendes/mopop/src/solver/mhaco/mhaco_solver.cpp) | 27–88 |
+| [ihs_solver.cpp](file:///home/luishpmendes/mopop/src/solver/ihs/ihs_solver.cpp) | 26–87 |
+| [nsbrkga_solver.cpp](file:///home/luishpmendes/mopop/src/solver/nsbrkga/nsbrkga_solver.cpp) | 126–148 |
+
+### Fix specification
+
+1. **Construct index vector empty:** `reserve(num_assets)`, not `(num_assets)`.
+2. **Filter strictly positive expected returns only.**
+3. **Derive chromosome weights from a non-negative quantity** (e.g., the
+   absolute value of expected returns, or uniform weights over the selected
+   subset) so the normalizing sum is strictly positive.
+4. **Guard `value[2]` (Sharpe ratio):** if `value[1] == 0.0`, set
+   `value[2] = 0.0` instead of computing `0.0 / 0.0`.
+5. **Guard population sizing:** if `positive_expected_returns_indexes.size() < 2`,
+   skip the expected-returns-weighted seeding block entirely (fall back to
+   random initialization for those slots).
 
 ### Tasks
 
-1. Add `make check` target
-2. Create small committed fixture
-3. Verify `make clean && make all`
-4. Create `requirements.txt`
+1. Fix the initialization block in all six `*_solver.cpp` files.
+2. Add the `value[2]` zero-variance guard in `solution.cpp` and
+   `decoder.cpp` (keep them in sync — CLAUDE.md documents this duplication).
+3. Update all six solver tests to run on `ibov_2020/train/` (the instance
+   that triggers the bug) and assert:
+   - All objective values are finite (`std::isfinite`).
+   - Shannon entropy ≥ 0 for every archived solution.
+   - Portfolio variance ≤ max single-asset variance.
+4. Rebuild and run all tests: `make clean && make all`.
 
 ### Acceptance criteria
 
-- `make clean && make all` compiles
-- `make check` passes offline
-- Fixture produces deterministic solver output (1 solver, 1 seed, 1s)
+- `make clean && make all` passes (all 9 tests).
+- NS-BRKGA on `ibov_2020/train/` with seed 305089489, 5 s: 0 solutions with
+  negative entropy.
+- No solution in any solver's archive has `NaN` or `Inf` in its objective
+  values.
+- Legacy `input/` fixture tests still pass.
+
+### Dependencies
+
+None (self-contained).
+
+### Risks
+
+- Changing initialization affects solver convergence — existing single-instance
+  results are not reproducible after this change. This is expected and
+  acceptable since those results were wrong.
 
 ---
 
-## Phase 2 — Instance Generation ✅ DONE
+## Phase 4B — Multi-Instance Run Script
 
-**Objective:** Generate 10 IBOVESPA instances with training/OOS split and daily statistics.
+**Objective:** Rewrite `run.sh` to loop over instances, using `motsp_irace`'s
+pattern. Rename output directories to `hvr/`, `nigd_plus/`.
 
-### Files to create/modify
-
-#### [NEW] `scripts/generate_instances.py`
-
-- Reads ticker files from `ibovespa_tickers_2011_2025/tickers_{year}.csv`
-- Downloads adjusted close prices via `yfinance` for `[train_start, oos_end)` 
-- Splits by date into training and OOS
-- Computes daily returns, daily expected returns (mean), and daily covariance
-- Writes to `instances/ibov_{year}/train/` and `instances/ibov_{year}/oos/`
-- Writes `instances/ibov_{year}/metadata.json` with checksums, dates, ticker lists
-- Caches raw prices for reproducibility
-- Fails by default on insufficient ticker coverage (opt-in `--allow-partial`)
-
-#### [NEW] `scripts/validate_instances.py`
-
-- Validates all 10 instances: non-empty returns, square symmetric covariance, finite values, matching ticker order, no date overlap
-
-#### [DELETED] `downloader.py`
-
-Retired rather than fixed. `generate_instances.py` is self-contained and carries
-BUG 4's correction: its statistics are documented as **daily** throughout, with no
-annualization anywhere. Nothing referenced `downloader.py` — not `run.sh`, the
-Makefile, nor any plotter.
-
-### Instance date table
-
-| Instance | Training | OOS |
-|---|---|---|
-| `ibov_2011` | `[2011-01-01, 2016-01-01)` | `[2016-01-01, 2017-01-01)` |
-| `ibov_2012` | `[2012-01-01, 2017-01-01)` | `[2017-01-01, 2018-01-01)` |
-| ... | ... | ... |
-| `ibov_2020` | `[2020-01-01, 2025-01-01)` | `[2025-01-01, 2026-01-01)` |
-
-### Output structure
-
-```
-instances/ibov_2011/
-├── tickers.csv                    (copied from ibovespa_tickers_2011_2025)
-├── metadata.json
-├── train/
-│   ├── expected_returns.csv
-│   └── covariance_matrix.csv
-└── oos/
-    ├── expected_returns.csv
-    └── covariance_matrix.csv
-```
-
-### Tasks
-
-1. Implement `generate_instances.py` (daily statistics, no annualization)
-2. Implement `validate_instances.py`
-3. Generate all 10 instances
-4. Verify re-running on cached prices produces identical CSVs
-
-### Acceptance criteria — all met
-
-- All 10 instances pass validation (`validate_instances.py`, 10/10)
-- Deterministic from cached prices: rebuilt inside an isolated network namespace
-  (`unshare -rn`), `diff -r` byte-identical
-- Malformed ticker → nonzero exit
-- Train/OOS use same ticker order and dimensions
-
-### Cache layer
-
-`fetch` is the only networked step; `build` has no network code path at all.
-
-```
-cache/prices/{TICKER}.csv     date,close — 165 files, committed
-cache/manifest.json           per ticker: status, span, first/last date, n_rows, sha256
-```
-
-Each manifest entry carries a `status`: `ok`, `no_data` (the source answered
-authoritatively that it has none), or `error` (the attempt failed and the truth
-is unknown). `build` refuses to run while any needed ticker is `error`, because
-treating an unknown history as an empty one would silently shrink an instance
-into something that still looks perfectly valid. `fetch` likewise refuses to
-overwrite a non-empty cached series with an empty response.
-
-### Outcome: partial coverage and survivorship bias
-
-Yahoo Finance does not retain delisted, renamed, or merged symbols — it serves
-nothing for them at any date range. Because the constituent lists are historical,
-**65 of the 165 unique tickers are unavailable**, costing 20–32 names per
-instance:
-
-| Instance | Constituents | No data at source | Dropped by coverage rule | Assets |
-|---|---|---|---|---|
-| `ibov_2011` | 58 | 30 | 0 | 28 |
-| `ibov_2012` | 62 | 30 | 2 | 30 |
-| `ibov_2013` | 66 | 30 | 0 | 36 |
-| `ibov_2014` | 72 | 32 | 2 | 38 |
-| `ibov_2015` | 68 | 31 | 2 | 35 |
-| `ibov_2016` | 61 | 24 | 2 | 35 |
-| `ibov_2017` | 59 | 23 | 2 | 34 |
-| `ibov_2018` | 63 | 20 | 2 | 41 |
-| `ibov_2019` | 65 | 22 | 1 | 42 |
-| `ibov_2020` | 73 | 26 | 0 | 47 |
-
-The ≥95%-plus-endpoints coverage rule accounts for at most 2 drops per instance
-(FIBR3, OGXP3, NATU3 — genuine mid-window delistings, exactly what the endpoint
-test exists to catch). The dominant loss is upstream data availability.
-
-**Consequence:** every asset in an instance is one whose price record survived to
-the date the cache was built, so expected returns are biased upward. Each
-`metadata.json` records this in a `survivorship_bias_warning` field along with
-per-ticker drop causes. For comparing the six solvers this is a documentation
-matter rather than a threat to validity — the instances are fixed and every
-solver sees identical data — but it does inflate any claim made from the OOS
-windows. Revisit before writing the results chapter. Near-complete coverage would
-require a source that retains delisted securities (B3's COTAHIST files, which
-carry unadjusted prices, or a provider such as Economatica).
-
----
-
-## Phase 3 — Metric Bug Fixes and Renaming ✅ DONE
-
-**Objective:** Fix the 4 confirmed bugs, rename executables/flags to match `motsp_irace`, remove hardcoded `4`, and ship the raw-hypervolume executable Phase 5 needs.
-
-### Files modified
-
-#### [MODIFY] `hypervolume_calculator_exec.cpp` → [hypervolume_ratio_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hypervolume_ratio_calculator_exec.cpp)
-
-- Fixed `hv.compute(reference_point)` → `hv.compute(reference_point_prime)` (BUG 1)
-- Replaced all `4` with `instance.senses.size()`
-- Renamed CLI flags: `--hypervolume-*` → `--hvr-*`
-- Guarded both output loops with `option_exists`, matching `motsp_irace`. Required because `Argument_Parser::option_value` returns `""` for a missing flag, and `ofs.open("")` then throws `File  not created.`
-- Empty candidate front returns `0.0` instead of reaching pagmo, which throws on an empty front
-- Assert tolerance `<= 1.0 + 1e-9`; `CARGS` carries no `-DNDEBUG`, so an exact comparison aborts real runs on rounding
-
-#### [NEW] [hypervolume_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/hypervolume_calculator_exec.cpp)
-
-Raw hypervolume, mirroring `motsp_irace`'s exec of the same name. Takes `--reference-point` and **no `--reference-pareto`**, which is what makes it usable as an irace cost. `mopop` has no `Instance::primal_bound`, so the point comes from a file.
-
-#### [MODIFY] `modified_generational_distance_calculator_exec.cpp` → [normalized_modified_generational_distance_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/normalized_modified_generational_distance_calculator_exec.cpp)
-
-- Replaced all `4` with `instance.senses.size()`
-- Renamed CLI flags: `--igd-plus-*` → `--nigd-plus-*`; fixed the usage string, which advertised a `--instance` flag this exec never accepted
-- Empty-front guard before `front.front()`, which was undefined behaviour
-- Assert tolerance `<= 1.0 + 1e-9`
-
-The name is a misnomer — the metric is IGD+ — but `motsp_irace` uses the same one and cross-project consistency wins. Thesis text should say IGD+.
-
-#### [MODIFY] [reference_pareto_front_and_point_calculator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/reference_pareto_front_and_point_calculator_exec.cpp)
-
-- Reference point tracks worst *and* best per sense (BUG 2), then pads the worst outward by 5% of the attained range (BUG 3), with fallbacks for a zero range and for an all-zero objective
-- Removed the 5% front perturbation; the reference front is written as pooled and nondominated
-- Dropped the dead `--hypervolume-*` clauses from the `num_solvers` discovery loop — this exec is never passed them
-- Replaced hardcoded `4` with `instance.senses.size()`
-
-#### [MODIFY] [results_aggregator_exec.cpp](file:///home/luishpmendes/mopop/src/exec/results_aggregator_exec.cpp)
-
-- Renamed flags to `--hvr*` / `--nigd-plus*`, matching `motsp_irace` exactly
-- Stripped the stray debug prefixes from exception messages (`"A File "` … `"Q File "`)
-
-#### [MODIFY] [Makefile](file:///home/luishpmendes/mopop/Makefile), [run.sh](file:///home/luishpmendes/mopop/run.sh)
-
-- Link rules and phony aliases for all three metric execs; `metrics_test` added to `tests`
-- `run.sh` flag sync only — directory renames stay in Phase 4. Also fixed a pre-existing mismatch: `run.sh` passed `--igd-pluses-statistics` while the aggregator read `--igd-plus-statistics`, so the IGD+ statistics file was silently never written
-
-#### [NEW] [src/test/metrics_test.cpp](file:///home/luishpmendes/mopop/src/test/metrics_test.cpp)
-
-The metric formulas live inside exec `main()` translation units and cannot be linked against, so the test mirrors them over an analytic mixed-sense fixture and asserts closed-form values (HV `0.3524`, `reference_igd_plus = (√8.9 + √35.3)/2`), plus the negative-value and zero-range reference point cases. Keep the copies in sync when touching the execs.
-
-### Acceptance criteria — all met
-
-- `make clean && make all` compiles all three metric execs and `metrics_test` passes
-- Analytic mixed-sense HVR fixture matches the expected value
-- Identical candidate = reference → HVR = 1.0, NIGD+ = 0.0 (verified on real solver output)
-- No hardcoded `4` in the metric executables
-- Raw HV exec runs with only `--pareto-0` / `--hypervolume-0`, the irace invocation
-
-> [!NOTE]
-> The original criterion "`motsp_irace`-compatible output on an all-minimization fixture" was dropped. With a range-padded reference point, `mopop` will not match `motsp_irace`, which uses `instance.primal_bound` and a perturbed front. The analytic fixture is the real check.
-
-### Deliberately out of scope
-
-Hardcoded `4` outside the metric execs — `Instance::is_valid()`, `get_nobj()` in the five pagmo `problem.cpp` files, `Decoder`'s value buffers, `Solution`'s `value(4, 0.0)`. Changing those needs a coordinated pass over all six solvers and their tests.
-
----
-
-## Phase 4 — Multi-Instance Run Script
-
-**Objective:** Rewrite `run.sh` to loop over instances, using `motsp_irace`'s proven pattern.
+**Depends on:** Phase 4A (solvers must be correct).
 
 ### Files to modify/create
 
 #### [MODIFY] [run.sh](file:///home/luishpmendes/mopop/run.sh)
 
-Rewrite to follow [motsp_irace/run.sh](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/run.sh) pattern:
+Rewrite to follow [motsp_irace/run.sh](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/run.sh):
 
-- Add outer `for instance in ${instances[@]}` loop
-- Use 10 seeds instead of 3
-- Use renamed directories: `hvr/`, `hvr_snapshots/`, `nigd_plus/`, `nigd_plus_snapshots/`
-- Use renamed executables and flags
-- Use `{instance}_{solver}_{seed}` filename pattern (matching `motsp_irace`)
-- Point each instance to its `instances/ibov_{year}/train/` files
-- Add `set -euo pipefail`
-- Configure `time_limit=3600`, `max_num_solutions=500`, `max_num_snapshots=30`
+- Add `set -euo pipefail`.
+- Add outer `for instance in ${instances[@]}` loop.
+- Use 10 seeds.
+- Use renamed directories: `hvr/`, `hvr_snapshots/`, `nigd_plus/`,
+  `nigd_plus_snapshots/`.
+- Use `{instance}_{solver}_{seed}` filename pattern.
+- Point each instance to `instances/${instance}/train/expected_returns.csv` and
+  `instances/${instance}/train/covariance_matrix.csv`.
+- Reference front/point computed **per instance**: `pareto/${instance}.txt` and
+  `pareto/${instance}_point.txt`.
+- HVR and NIGD+ computed **per instance**, reading the instance's own reference
+  front and reference point.
+- Results aggregator invoked **per instance per solver** using
+  `{instance}_{solver}` output prefix.
+- Parameters: `time_limit=3600`, `max_num_solutions=500`,
+  `max_num_snapshots=30`, `max_ref_solutions=800`.
+
+> [!IMPORTANT]
+> `mopop`'s `hypervolume_ratio_calculator_exec` and
+> `normalized_modified_generational_distance_calculator_exec` take
+> `--reference-point` in addition to `--reference-pareto`, unlike `motsp_irace`
+> which derives the reference point from `instance.primal_bound`. The run script
+> must pass `--reference-point ${path}/pareto/${instance}_point.txt` to both.
 
 #### [NEW] `run_smoke.sh`
 
-- Same structure but: 1 instance, 2 seeds, 5s time limit — for quick testing
+Same structure but: 1 instance (`ibov_2015`), 2 seeds, 5 s time limit.
 
-#### [MODIFY] All plotter scripts
+#### [MODIFY] [plotter_definitions.py](file:///home/luishpmendes/mopop/plotter_definitions.py)
 
-- [plotter_definitions.py](file:///home/luishpmendes/mopop/plotter_definitions.py): add `instances` list, update to 10 seeds, rename `hypervolume` → `hvr` and `igd_plus` → `nigd_plus`
-- All `plotter_*.py` files: add instance loop, update directory names
-
-### Key parameters
-
-```bash
-instances=(ibov_2011 ibov_2012 ibov_2013 ibov_2014 ibov_2015
-           ibov_2016 ibov_2017 ibov_2018 ibov_2019 ibov_2020)
-solvers=(nsga2 nspso moead mhaco ihs nsbrkga)
-seeds=(305089489 511812191 608055156 467424509 944441939
-       414977408 819312498 562386085 287613914 755772793)
-time_limit=3600
-max_num_solutions=500
-max_num_snapshots=30
-max_ref_solutions=800
+```python
+instances = ["ibov_2011", "ibov_2012", ..., "ibov_2020"]
+seeds = [305089489, 511812191, ..., 755772793]  # 10 seeds
+num_snapshots = 30
+# Remove: expected_returns, covariance (no longer single-instance)
 ```
 
-### Output structure (matching `motsp_irace` pattern)
+#### [MODIFY] All `plotter_*.py` files
+
+- Add instance loop.
+- Update directory names (`hypervolume` → `hvr`, `igd_plus` → `nigd_plus`).
+- Update filename pattern to `{instance}_{solver}_{seed}`.
+- Input file extensions are `.txt`, not `.csv` (fix existing mismatch noted in
+  `plotter_definitions.py`).
+
+### Output structure
 
 ```
 mopop/
 ├── statistics/       ibov_2011_nsga2_305089489.txt ...
-├── pareto/           ibov_2011_nsga2_305089489.txt, ibov_2011.txt (ref front) ...
+├── pareto/           ibov_2011_nsga2_305089489.txt, ibov_2011.txt, ibov_2011_point.txt ...
 ├── hvr/              ibov_2011_nsga2_305089489.txt ...
 ├── hvr_snapshots/    ibov_2011_nsga2_305089489.txt ...
 ├── nigd_plus/        ibov_2011_nsga2_305089489.txt ...
@@ -406,25 +227,24 @@ mopop/
 
 ### Tasks
 
-1. Rewrite `run.sh` with instance loop and 10 seeds
-2. Update all directory and file naming
-3. Update reference front calculator invocation (per instance)
-4. Update HVR and NIGD+ calculator invocations (per instance)
-5. Update results aggregator invocation (per instance per solver)
-6. Create `run_smoke.sh`
-7. Update all plotter scripts
+1. Rewrite `run.sh` with instance loop, 10 seeds, renamed dirs.
+2. Create `run_smoke.sh`.
+3. Update `plotter_definitions.py`.
+4. Update all 12 `plotter_*.py` files for multi-instance.
+5. Delete `plotter_num_fronts_snapshots copy.py` (stale duplicate).
 
 ### Acceptance criteria
 
-- `run_smoke.sh` completes end-to-end on 1 instance, 2 seeds, 5s
-- Output files follow `{instance}_{solver}_{seed}` naming
-- Reference front computed per instance (not globally)
-- All 6 solvers produce non-empty pareto files
+- `run_smoke.sh` completes end-to-end on 1 instance, 2 seeds, 5 s.
+- Output files follow `{instance}_{solver}_{seed}` naming.
+- Reference front computed per instance (not globally).
+- All 6 solvers produce non-empty pareto files.
+- No file references old directory names (`hypervolume/`, `igd_plus/`).
 
-### Runtime estimate
+### Runtime estimate (full run)
 
 ```
-10 instances × 6 solvers × 10 seeds × 3600s = 600 runs @ 1hr each
+10 instances × 6 solvers × 10 seeds × 3600 s = 600 runs @ 1 hr each
 With 6 workers ≈ 100 hours wall-clock
 ```
 
@@ -432,172 +252,281 @@ With 6 workers ≈ 100 hours wall-clock
 
 ## Phase 5 — `irace` Parameter Tuning
 
-**Objective:** Set up `irace` workflows for all 6 solvers, following `motsp_irace` patterns.
+**Objective:** Set up `irace` workflows for all 6 solvers.
+
+**Depends on:** Phase 4A (solvers correct), Phase 4B (instances wired up).
+
+### Key difference from `motsp_irace`
+
+`motsp_irace`'s target runners use `--instance <path>` (single file) and the
+raw HV exec derives its reference point from `instance.primal_bound`. In
+`mopop`, each solver takes two instance files (`--expected-returns-filename` and
+`--covariance-filename`) and the raw HV exec reads its reference point from a
+file (`--reference-point`). The target runners must:
+
+1. Parse `$4` as an instance name (e.g., `ibov_2015`).
+2. Map it to `instances/${INSTANCE}/train/expected_returns.csv` and
+   `instances/${INSTANCE}/train/covariance_matrix.csv`.
+3. Pass `--reference-point instances/${INSTANCE}/reference_point.txt` to the HV
+   calculator.
+
+### Prerequisite: frozen reference points for tuning instances
+
+Before irace can run, each training instance needs a **frozen** reference point.
+Compute it once from a pilot pool (all 6 solvers × 2 seeds × 60 s) and store it
+as `instances/${instance}/reference_point.txt`. The point must not be recomputed
+per candidate, or costs become incomparable. The 5%-of-range padding ensures
+that a later run slightly exceeding the pilot pool still lands inside the
+dominated region.
 
 ### Directory structure
 
 ```
 irace/
-├── train-instances.txt         (ibov_2011 through ibov_2017)
-├── test-instances.txt          (ibov_2018 through ibov_2020)
+├── train-instances.txt         (ibov_2011 .. ibov_2017, one per line)
+├── test-instances.txt          (ibov_2018 .. ibov_2020, one per line)
 ├── nsga2-parameters.txt
 ├── nsga2-scenario.txt
-├── nsga2-target-runner.sh
+├── nsga2-tunner.sh
 ├── nspso-parameters.txt
 ├── nspso-scenario.txt
-├── nspso-target-runner.sh
+├── nspso-tunner.sh
 ├── moead-parameters.txt
 ├── moead-scenario.txt
-├── moead-target-runner.sh
+├── moead-tunner.sh
 ├── mhaco-parameters.txt
 ├── mhaco-scenario.txt
-├── mhaco-target-runner.sh
+├── mhaco-tunner.sh
 ├── ihs-parameters.txt
 ├── ihs-scenario.txt
-├── ihs-target-runner.sh
+├── ihs-tunner.sh
 ├── nsbrkga-parameters-stage{1..6}.txt
 ├── nsbrkga-scenario-stage{1..6}.txt
-├── nsbrkga-target-runner.sh
+├── nsbrkga-tunner-stage{1..6}.sh
 └── irace_runner.sh
 ```
 
-### Target runner contract (all solvers)
+### Instance files (matching `motsp_irace` format)
 
-Each `{solver}-target-runner.sh` must:
-1. Parse irace args: `$1`=config_id, `$2`=instance_id, `$3`=seed, `$4`=instance_path
-2. Map instance path to `instances/{instance}/train/expected_returns.csv` and `covariance_matrix.csv`
-3. Run solver for 60s with `--pareto` output to tmpdir
-4. Compute raw hypervolume using `hypervolume_calculator_exec` (the Phase 3 raw exec, same approach as `motsp_irace`), passing the instance's **frozen** reference point
-5. Print `cost elapsed_time` where `cost = -HV` (negated, since irace minimizes) or `Inf` on failure
-6. Clean tmpdir via `trap`
+**`train-instances.txt`:**
+```
+ibov_2011
+ibov_2012
+ibov_2013
+ibov_2014
+ibov_2015
+ibov_2016
+ibov_2017
+```
+
+**`test-instances.txt`:**
+```
+ibov_2018
+ibov_2019
+ibov_2020
+```
+
+### Scenario files (example: `nsga2-scenario.txt`)
+
+```
+execDir = "./"
+trainInstancesDir = "../instances"
+trainInstancesFile = "./train-instances.txt"
+targetRunner = "./nsga2-tunner.sh"
+maxTime = 2160000
+parallel = 1
+logFile = "./irace-nsga2.Rdata"
+parameterFile = "./nsga2-parameters.txt"
+testInstancesDir = "../instances"
+testInstancesFile = "./test-instances.txt"
+testNbElites = 5
+testIterationElites = 0
+```
 
 > [!NOTE]
-> Both `motsp_irace` and `mopop` use **raw negated hypervolume** (`-HV`) as the irace cost. `hypervolume_calculator_exec` handles mixed-sense objectives by negating maximization objectives internally before computing the hypervolume via pagmo.
+> `trainInstancesDir = "../instances"` means irace passes `../instances/ibov_2015`
+> as `$4`. The target runner appends `/train/expected_returns.csv` and
+> `/train/covariance_matrix.csv`.
 
-> [!IMPORTANT]
-> Unlike `motsp_irace`, which derives its reference point from `instance.primal_bound`, `mopop` reads it from a file. Each training instance therefore needs a reference point computed **once** from a pilot pool and then frozen (`instances/ibov_{year}/reference_point.txt`). A point recomputed per candidate would make the cost depend on which configurations happen to be in the pool, so costs would not be comparable across configurations. Because the Phase 3 reference point is padded 5% beyond the pilot pool's attained range, a later run that slightly exceeds the pilot pool still lands inside it rather than making pagmo reject the front.
+### Target runner contract (all solvers)
 
-### Tuning instance split
-
-```
-Training:  ibov_2011 through ibov_2017 (7 instances)
-Holdout:   ibov_2018 through ibov_2020 (3 instances)
-```
+Each `{solver}-tunner.sh` must:
+1. Parse: `$1`=config_id, `$2`=instance_id, `$3`=seed, `$4`=instance_path.
+2. Derive `ER=${4}/train/expected_returns.csv`,
+   `COV=${4}/train/covariance_matrix.csv`,
+   `REF=${4}/reference_point.txt`.
+3. Run solver for 60 s with `--pareto` output to tmpdir.
+4. Compute raw HV: `hypervolume_calculator_exec --expected-returns-filename $ER
+   --covariance-filename $COV --reference-point $REF --pareto-0 $PARETO_FILE
+   --hypervolume-0 $HV_FILE`.
+5. Print `cost elapsed_time` where `cost = -HV` (negated, since irace
+   minimizes) or `Inf` on failure.
+6. Clean tmpdir via `trap`.
 
 ### Parameter files
 
-Derive from actual solver CLI options (verified from source):
+Derive from actual solver CLI flags (verified from `*_solver_exec.cpp` usage
+strings):
 
-- **NSGA-II:** `--population-size`, `--crossover-probability`, `--crossover-distribution`, `--mutation-probability`, `--mutation-distribution`
-- **NSPSO:** `--population-size`, `--omega`, `--v-coeff`, `--chi`, `--v-max`, `--u-min`, `--u-max`, `--memory`
-- **MOEA/D-DE:** `--population-size`, `--weight-generation`, `--decomposition`, `--cr`, `--f`, `--neighbours`, `--preserve-diversity`
-- **MHACO:** `--population-size`, `--ker`, `--q`, `--threshold`, `--n-gen-mark`, `--focus`, `--memory`
-- **IHS:** `--population-size`, `--phmcr`, `--ppar-min`, `--ppar-max`, `--bw-min`, `--bw-max`
-- **NS-BRKGA:** Staged tuning (6 stages, matching `motsp_irace`)
+| Solver | Parameters |
+|---|---|
+| **NSGA-II** | `population_size_factor` i(25,125), `crossover_probability` r(0.01,0.99), `crossover_distribution` r(1,99), `mutation_probability` r(0.01,0.99), `mutation_distribution` r(1,99) |
+| **NSPSO** | `population_size_factor` i(25,125), `omega` r(0,1), `v_coeff` r(0,1), `chi` r(0,1), `v_max` r(0,1), `u_min` r(0,1), `u_max` r(0,1), `memory` c(0,1) |
+| **MOEA/D-DE** | `population_size_factor` i(25,125), `weight_generation` c(grid,low_discrepancy,random), `decomposition` c(tchebycheff,weighted,bi), `cr` r(0,1), `f` r(0,2), `neighbours` i(2,50), `preserve_diversity` c(0,1) |
+| **MHACO** | `population_size_factor` i(25,125), `ker` i(2,100), `q` r(0.01,100), `threshold` i(1,100), `n_gen_mark` i(1,100), `focus` r(0,1), `memory` c(0,1) |
+| **IHS** | `population_size_factor` i(25,125), `phmcr` r(0.01,0.99), `ppar_min` r(0.01,0.99), `ppar_max` r(0.01,0.99), `bw_min` r(1e-6,1), `bw_max` r(1e-6,1) |
+| **NS-BRKGA** | 6-stage ablation (identical structure to `motsp_irace`) |
 
 ### Tasks
 
-1. Create `train-instances.txt` and `test-instances.txt`
-2. Create parameter files for each solver (from actual CLI)
-3. Create scenario files for each solver
-4. Create target runners for each solver
-5. Create NS-BRKGA staged parameter/scenario files
-6. Create `irace_runner.sh` orchestrator
-7. Build pilot reference fronts for tuning instances
+1. Create `irace/train-instances.txt` and `irace/test-instances.txt`.
+2. Create `scripts/build_pilot_reference_points.sh`: runs all 6 solvers ×
+   2 seeds × 60 s on each training instance, then computes the reference front
+   and reference point, writing `instances/${instance}/reference_point.txt`.
+3. Run the pilot to generate frozen reference points.
+4. Create parameter files for each solver.
+5. Create scenario files for each solver.
+6. Create target runner (`*-tunner.sh`) for each solver.
+7. Create NS-BRKGA staged parameter/scenario files (6 stages).
+8. Create `irace/irace_runner.sh` orchestrator.
 
 ### Acceptance criteria
 
-- Every target runner passes `irace --check`
-- 10-experiment smoke test completes for each solver
-- stdout contains only `cost elapsed_time`
-- Holdout instances untouched during tuning
+- Every target runner passes `irace --check`.
+- 10-evaluation smoke test completes for each solver.
+- stdout contains only `cost elapsed_time`.
+- Holdout instances untouched during tuning.
+- `instances/ibov_{2011..2017}/reference_point.txt` exist and contain exactly
+  4 space-separated floats.
 
 ---
 
 ## Phase 6 — Result Aggregation, Statistics, and Plotting
 
-**Objective:** Aggregate multi-instance results, compute statistics, generate publication-quality plots.
+**Objective:** Aggregate multi-instance results, compute statistics, generate
+publication-quality plots.
+
+**Depends on:** Phase 4B (run script complete), Phase 5 (tuned parameters used
+in final runs).
 
 ### Files to create/modify
 
-#### [NEW] `scripts/aggregate_results.py`
+#### [NEW] `scripts/results_aggregator.py`
 
-Produce tidy CSVs:
-- `summary/runs.csv`: one row per `(instance, solver, seed)` with columns: `instance, solver, seed, hvr, nigd_plus, runtime, num_solutions`
-- `summary/snapshots.csv`: one row per snapshot
+Mirror [motsp_irace/results_aggregator.py](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/results_aggregator.py):
 
-#### [MODIFY] [metrics_stats.py](file:///home/luishpmendes/mopop/metrics_stats.py) → `scripts/metrics_stats.py`
+- Read HVR from `hvr/{instance}_{solver}_{seed}.txt` (one float per file).
+- Read NIGD+ from `nigd_plus/{instance}_{solver}_{seed}.txt`.
+- Read snapshots from `hvr_snapshots/` and `nigd_plus_snapshots/`.
+- Output `metrics.csv` (tidy, one row per `(instance, solver, seed, metric)`).
+- Output `metrics_snapshots.csv`.
+- Output per-metric stats: `hvr_stats.csv`, `nigd_plus_stats.csv` with
+  mean, std, rank.
 
-- Friedman test with `(instance, seed)` as blocks
-- Pairwise post-hoc with Holm correction
-- Report average ranks and adjusted p-values
+#### [NEW] `scripts/metrics_stats.py`
+
+Mirror [motsp_irace/metrics_stats.py](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/metrics_stats.py):
+
+- Per-instance and all-instance mean ± std for each solver × metric.
+- Print to stdout (tee to `metrics_stats.txt` in `run.sh`).
 
 #### [MODIFY] All plotter scripts
 
-- Accept instance list parameter
-- Generate per-instance and aggregate cross-instance plots
-- Rename output directories (`hvr/`, `nigd_plus/`)
-- Add algorithm-rank boxplots across instances
+Already handled in Phase 4B for the instance loop; this phase adds:
+
+- Cross-instance aggregate plots (algorithm-rank boxplots).
+- Convergence curves (median ± IQR) per instance.
+- Pareto front plots for best/median runs per instance.
 
 ### Required plots
 
-1. Per-instance HVR and NIGD+ boxplots (6 solvers)
-2. Aggregate rank plots across all 10 instances
-3. Convergence curves (median ± IQR) per instance
-4. Pareto front plots for best/median runs
+1. Per-instance HVR and NIGD+ boxplots (6 solvers).
+2. Aggregate rank plots across all 10 instances.
+3. Convergence curves (median ± IQR) per instance.
+4. Pareto front plots for best/median runs per instance.
 
 ### Tasks
 
-1. Implement `aggregate_results.py`
-2. Update `metrics_stats.py` for blocked statistical tests
-3. Update all plotters for multi-instance
-4. Add cross-instance aggregate plots
+1. Implement `scripts/results_aggregator.py`.
+2. Implement `scripts/metrics_stats.py`.
+3. Wire both into `run.sh` (after the results_aggregator_exec block).
+4. Add cross-instance aggregate plots to existing plotters.
 
 ### Acceptance criteria
 
-- `runs.csv` has exactly `10 × 6 × 10 = 600` rows
-- Missing data detected and reported
-- All plots generate headlessly
-- Statistical output includes sample counts
+- `metrics.csv` has exactly `10 × 6 × 10 × 2 = 1200` rows (600 HVR + 600 NIGD+).
+- Missing data detected and reported (non-silent).
+- All plots generate headlessly (`matplotlib.use('Agg')`).
+- `metrics_stats.txt` contains per-instance and aggregate tables.
 
 ---
 
-## Phase 7 — Documentation
+## Phase 7 — Tests and Documentation
 
-**Objective:** Complete README and ensure clean-clone reproducibility.
+**Objective:** Harden tests, complete README, ensure clean-clone
+reproducibility.
 
-### Files to create/modify
+**Depends on:** Phases 4A, 4B, 5, 6.
+
+### Files to modify/create
+
+#### [MODIFY] [.gitignore](file:///home/luishpmendes/mopop/.gitignore)
+
+Add:
+```
+instances/*/train/
+instances/*/oos/
+instances/*/reference_point.txt
+statistics/
+solutions/
+pareto/
+hvr/
+hvr_snapshots/
+nigd_plus/
+nigd_plus_snapshots/
+best_solutions_snapshots/
+num_non_dominated_snapshots/
+num_fronts_snapshots/
+num_elites_snapshots/
+populations_snapshots/
+metrics/
+metrics_snapshots/
+irace/*.Rdata
+irace/*-tuning.log
+irace/*-testing.log
+```
 
 #### [MODIFY] [README.md](file:///home/luishpmendes/mopop/README.md)
 
 Sections:
-1. Problem formulation (4 objectives, senses)
-2. Dependencies and build (`make all` with configurable paths)
-3. Python/R environment setup
-4. Instance generation commands
-5. Smoke experiment command
-6. Final experiment command + runtime estimate
-7. HVR and NIGD+ definitions (exact formulas)
-8. `irace` tuning procedure
-9. Result aggregation and plotting commands
-10. Reproducibility notes (Yahoo Finance caveats)
+1. Problem formulation (4 objectives, mixed senses).
+2. Dependencies and build (`make all` with configurable paths).
+3. Python environment setup (`requirements.txt`).
+4. Instance generation commands.
+5. Smoke experiment command (`run_smoke.sh`).
+6. Full experiment command + runtime estimate.
+7. HVR and NIGD+ definitions (exact formulas).
+8. `irace` tuning procedure.
+9. Result aggregation and plotting commands.
+10. Reproducibility notes (Yahoo Finance caveats, survivorship bias).
 
-#### [MODIFY] [.gitignore](file:///home/luishpmendes/mopop/.gitignore)
+#### Stale file cleanup
 
-- Add `instances/*/train/`, `instances/*/oos/`, result directories, `bin/`, `venv/`, `__pycache__/`
+- Delete `plotter_num_fronts_snapshots copy.py`.
+- Verify `input/` is only used by tests; if so, document in README.
 
 ### Tasks
 
-1. Write complete README
-2. Update `.gitignore`
-3. Remove stale files (`input/` after migration verified, duplicate plotter)
-4. Verify clean-clone smoke execution
+1. Update `.gitignore`.
+2. Write complete README.
+3. Delete stale files.
+4. Verify clean-clone smoke execution (clone, build, `run_smoke.sh`).
 
 ### Acceptance criteria
 
-- New user with documented dependencies can run smoke profile from clean clone
-- No machine-specific hardcoded paths remain
-- `plotter_num_fronts_snapshots copy.py` removed
+- New user with documented dependencies can run smoke profile from clean clone.
+- `plotter_num_fronts_snapshots copy.py` removed.
+- `.gitignore` covers all generated artifacts.
 
 ---
 
@@ -605,31 +534,53 @@ Sections:
 
 ```mermaid
 graph TD
-    P1[Phase 1: Build Portability] --> P2[Phase 2: Instance Generation]
-    P1 --> P3[Phase 3: Metric Bug Fixes]
-    P2 --> P4[Phase 4: Multi-Instance Run Script]
-    P3 --> P4
-    P2 --> P5[Phase 5: irace Tuning]
-    P3 --> P5
-    P4 --> P6[Phase 6: Aggregation & Plots]
-    P4 --> P7[Phase 7: Documentation]
-    P5 --> P7
+    P4A["Phase 4A: Fix BUG 5"] --> P4B["Phase 4B: Multi-Instance Run Script"]
+    P4A --> P5["Phase 5: irace Tuning"]
+    P4B --> P5
+    P4B --> P6["Phase 6: Aggregation & Plots"]
+    P5 --> P6
+    P5 --> P7["Phase 7: Tests & Documentation"]
     P6 --> P7
 ```
 
-> [!NOTE]
-> Phases 2 and 3 can proceed in parallel after Phase 1. Phase 5 (irace) can start as soon as Phases 2+3 are done, in parallel with Phase 4.
+**Critical path:** 4A → 4B → 5 → 6 → 7.
+
+Phase 5 can start its file-creation tasks (parameter files, scenario files,
+target runners) as soon as 4A is done, but the actual tuning runs require 4B's
+`run_smoke.sh` to have validated the pipeline.
 
 ---
 
-## What Was Removed from the Original Plan
+## Reference Projects
 
-1. **YAML configuration system** (`config/instances.yaml`, `config/experiments/*.yaml`) — unnecessary complexity; hardcode in shell scripts like `motsp_irace` does
-2. **OOS portfolio reevaluation pipeline** (Stage 4 of original) — deferred; can be added later without affecting the core pipeline
-3. **`manifest.json` experiment metadata** — premature; use simple log files like `motsp_irace`
-4. **Atomic rename / resume / force behavior** — over-engineering for a research pipeline
-5. **`results/<experiment_id>/` nested output structure** — use flat directories matching `motsp_irace`
-6. **Separate `src/metrics/` library** — keep metric logic in exec files (matches all reference projects)
-7. **`scripts/run_experiments.sh` / `scripts/build_reference_fronts.sh` / `scripts/compute_metrics.sh`** — consolidated into single `run.sh` (matches `motsp_irace`)
-8. **Training vs OOS scope separation in aggregation** — deferred with OOS evaluation
-9. **Speculative features**: training-vs-OOS degradation plots, effect-size measures, compression policies
+| Project | Path | Used for |
+|---|---|---|
+| `motsp_irace` | `/home/luishpmendes/UNICAMP/Doutorado/motsp_irace` | `run.sh`, irace files, `plotter_definitions.py`, `results_aggregator.py`, `metrics_stats.py` |
+| `mopci` | `/home/luishpmendes/UNICAMP/Doutorado/mopci` | Additional plotter patterns if needed |
+| `motmdsp` | `/home/luishpmendes/UNICAMP/Doutorado/motmdsp` | Additional plotter patterns if needed |
+
+---
+
+## Risks
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| BUG 5 fix changes solver convergence | Existing results not reproducible | Expected — old results were wrong |
+| `population_size_factor × 4` too small for seeded individuals | Runtime crash (pagmo requires `pop_size > 2 × num_assets + seeded_count`) | Add guard: `max(factor × 4, 2 × num_assets + positive_count + 1)` |
+| irace reference point drift | Costs incomparable across candidates | Freeze reference point from pilot pool |
+| Yahoo re-adjusts prices | Cache diverges from fresh download | Cache is committed and pinned; never re-fetch |
+| 100+ hours wall-clock for full run | Long feedback loop | `run_smoke.sh` for quick validation |
+| `results_aggregator_exec` flag mismatch (`--nigd-pluses-statistics` vs `--nigd-plus-statistics`) | Silently drops NIGD+ stats file | Already fixed in Phase 3; verify in 4B |
+
+---
+
+## What Was Removed from Prior Plans
+
+1. **YAML configuration system** — unnecessary; hardcode in shell scripts.
+2. **OOS portfolio reevaluation pipeline** — deferred.
+3. **Atomic rename / resume / force behavior** — over-engineering.
+4. **Nested `results/<experiment_id>/` structure** — use flat directories.
+5. **Separate `src/metrics/` library** — keep metric logic in exec files.
+6. **Multiple shell scripts (`build_reference_fronts.sh`, `compute_metrics.sh`)** — consolidated into `run.sh`.
+7. **Speculative features** (training-vs-OOS degradation plots, effect-size measures).
+8. **Phase 1 (Build Portability)** — `requirements.txt` exists; `make check` deferred to Phase 7.
