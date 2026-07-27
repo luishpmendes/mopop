@@ -26,6 +26,18 @@ patterns from `motsp_irace`.
 | irace holdout split | `ibov_2018`–`ibov_2020` (3 instances) |
 | Population size factor | `population_size = factor × 4` (same as `motsp_irace`) |
 
+### Why 10 instances from 15 years of ticker data
+
+`ibovespa_tickers_2011_2025/` contains 15 files (`tickers_2011.csv` through
+`tickers_2025.csv`). The rolling-window design uses `tickers_{year}.csv` as
+the IBOVESPA composition, trains on `[year, year+5)`, and validates OOS on
+`[year+5, year+6)`. Instance `ibov_2020` trains on `[2020, 2025)` with OOS
+`[2025, 2026)`. Instances `ibov_2021` through `ibov_2025` would require price
+data extending to 2027–2031, which does not exist. The 10-instance design is
+therefore the maximum the data supports, not an arbitrary choice. The extra
+ticker files (`tickers_2021.csv`–`tickers_2025.csv`) serve only as
+documentation of IBOVESPA composition history.
+
 ---
 
 ## Completed Work
@@ -85,8 +97,8 @@ and the helper stops emitting once it holds `max_num_chromosomes` entries.
 That cap also closes two latent sizing hazards found while fixing this: the five
 pagmo solvers computed their random-individual count as
 `population_size - (2*num_assets + k - 1)` in unsigned arithmetic (underflow to
-a huge `size_type` when the seeds outnumber the population)'sde nmk,}6
-' cvb6yn7\§[mes than
+a huge `size_type` when the seeds outnumber the population) and NS-BRKGA's
+`setInitialPopulations` would throw when the seed vector was larger than
 `population_size`. Both matter for Phase 5, where `population_size = factor × 4`
 can be far below the ~122 seeds a 47-asset instance produces.
 
@@ -98,17 +110,14 @@ the weights summed to zero, leaving an all-zero weight vector. Verification
 found one such empty portfolio in the archive of all ten NS-BRKGA runs (and no
 pagmo run): with zero variance and zero entropy it attains the global minimum of
 both MINIMIZE objectives, so nothing can dominate it and it holds an archive
-slot permanently, biasing the reference front and hypervolume. It is not present
-at `--iterations-limit 0` or `1`, so it is produced during evolution — NS-BRKGA's
-ROULETTE crossover can draw the zero allele from each of the `num_assets`
-single-asset seed chromosomes. Both decode paths now fall back to the **uniform
-portfolio** when `total_weight <= 0`, so every decoded solution is a valid
-portfolio whose weights sum to 1; `assert_solver_invariants` asserts that sum.
-After the change: 0 empty portfolios across all six solvers × all ten instances.
+slot permanently, biasing the reference front and hypervolume. Both decode paths
+now fall back to the **uniform portfolio** when `total_weight <= 0`, so every
+decoded solution is a valid portfolio whose weights sum to 1;
+`assert_solver_invariants` asserts that sum. After the change: 0 empty
+portfolios across all six solvers × all ten instances.
 
-**Re4563.'gression tests.** `src/
-}?^:test/solver_invariants.hpp` holds the shared
-assertions (all obje4256354ctive values finite, entropy ≥ 0, variance ≤ largest
+**Regression tests.** `src/test/solver_invariants.hpp` holds the shared
+assertions (all objective values finite, entropy ≥ 0, variance ≤ largest
 single-asset variance, `is_feasible()`), applied by all six solver tests to
 three instances each: the legacy `input/` fixture, a new committed adversarial
 fixture, and `instances/ibov_2020/train/` when it has been built (guarded by a
@@ -137,115 +146,38 @@ Existing single-instance results are not reproducible after this change (the
 seed set and hence the RNG stream both shifted). Expected and accepted — those
 results were computed from broken initialization.
 
----
+### Phase 4B — Multi-Instance Run Script ✅
 
-## Phase 4B — Multi-Instance Run Script
+Commit `7484d10` ("refactor: consolidate plotter logic into utility modules and
+standardize snapshot plotting pipelines") completed this phase. Verified from
+repository state:
 
-**Objective:** Rewrite `run.sh` to loop over instances, using `motsp_irace`'s
-pattern. Rename output directories to `hvr/`, `nigd_plus/`.
+- **`run.sh`** rewritten with `for instance in ${instances[@]}` loop, 10 seeds,
+  renamed directories (`hvr/`, `nigd_plus/`), per-instance reference front/point
+  computation, `{instance}_{solver}_{seed}` filename pattern. Instances
+  configurable via `MOPOP_INSTANCES` env var.
+- **`run_smoke.sh`** created: reduced profile using env vars.
+- **`plotter_definitions.py`** updated: `instances` list from env, 10 seeds.
+- **All plotters updated**: `plotter_hypervolume.py` → `plotter_hvr.py`,
+  `plotter_igd_plus.py` → `plotter_nigd_plus.py`, instance loops added,
+  `plotter_utils.py` and `plotter_counts.py` extracted as shared modules.
+- **`plotter_num_fronts_snapshots copy.py`** deleted.
+- **`.gitignore`** updated: covers all generated directories (`hvr/`,
+  `nigd_plus/`, `statistics/`, `pareto/`, snapshots, `log_*.txt`).
 
-**Depends on:** Phase 4A (solvers must be correct).
-
-### Files to modify/create
-
-#### [MODIFY] [run.sh](file:///home/luishpmendes/mopop/run.sh)
-
-Rewrite to follow [motsp_irace/run.sh](file:///home/luishpmendes/UNICAMP/Doutorado/motsp_irace/run.sh):
-
-- Add `set -euo pipefail`.
-- Add outer `for instance in ${instances[@]}` loop.
-- Use 10 seeds.
-- Use renamed directories: `hvr/`, `hvr_snapshots/`, `nigd_plus/`,
-  `nigd_plus_snapshots/`.
-- Use `{instance}_{solver}_{seed}` filename pattern.
-- Point each instance to `instances/${instance}/train/expected_returns.csv` and
-  `instances/${instance}/train/covariance_matrix.csv`.
-- Reference front/point computed **per instance**: `pareto/${instance}.txt` and
-  `pareto/${instance}_point.txt`.
-- HVR and NIGD+ computed **per instance**, reading the instance's own reference
-  front and reference point.
-- Results aggregator invoked **per instance per solver** using
-  `{instance}_{solver}` output prefix.
-- Parameters: `time_limit=3600`, `max_num_solutions=500`,
-  `max_num_snapshots=30`, `max_ref_solutions=800`.
-
-> [!IMPORTANT]
-> `mopop`'s `hypervolume_ratio_calculator_exec` and
-> `normalized_modified_generational_distance_calculator_exec` take
-> `--reference-point` in addition to `--reference-pareto`, unlike `motsp_irace`
-> which derives the reference point from `instance.primal_bound`. The run script
-> must pass `--reference-point ${path}/pareto/${instance}_point.txt` to both.
-
-#### [NEW] `run_smoke.sh`
-
-Same structure but: 1 instance (`ibov_2015`), 2 seeds, 5 s time limit.
-
-#### [MODIFY] [plotter_definitions.py](file:///home/luishpmendes/mopop/plotter_definitions.py)
-
-```python
-instances = ["ibov_2011", "ibov_2012", ..., "ibov_2020"]
-seeds = [305089489, 511812191, ..., 755772793]  # 10 seeds
-num_snapshots = 30
-# Remove: expected_returns, covariance (no longer single-instance)
-```
-
-#### [MODIFY] All `plotter_*.py` files
-
-- Add instance loop.
-- Update directory names (`hypervolume` → `hvr`, `igd_plus` → `nigd_plus`).
-- Update filename pattern to `{instance}_{solver}_{seed}`.
-- Input file extensions are `.txt`, not `.csv` (fix existing mismatch noted in
-  `plotter_definitions.py`).
-
-### Output structure
-
-```
-mopop/
-├── statistics/       ibov_2011_nsga2_305089489.txt ...
-├── pareto/           ibov_2011_nsga2_305089489.txt, ibov_2011.txt, ibov_2011_point.txt ...
-├── hvr/              ibov_2011_nsga2_305089489.txt ...
-├── hvr_snapshots/    ibov_2011_nsga2_305089489.txt ...
-├── nigd_plus/        ibov_2011_nsga2_305089489.txt ...
-├── nigd_plus_snapshots/ ...
-├── best_solutions_snapshots/ ...
-├── num_non_dominated_snapshots/ ...
-├── num_fronts_snapshots/ ...
-├── num_elites_snapshots/ ...
-├── populations_snapshots/ ...
-├── metrics/ ...
-└── metrics_snapshots/ ...
-```
-
-### Tasks
-
-1. Rewrite `run.sh` with instance loop, 10 seeds, renamed dirs.
-2. Create `run_smoke.sh`.
-3. Update `plotter_definitions.py`.
-4. Update all 12 `plotter_*.py` files for multi-instance.
-5. Delete `plotter_num_fronts_snapshots copy.py` (stale duplicate).
-
-### Acceptance criteria
-
-- `run_smoke.sh` completes end-to-end on 1 instance, 2 seeds, 5 s.
-- Output files follow `{instance}_{solver}_{seed}` naming.
-- Reference front computed per instance (not globally).
-- All 6 solvers produce non-empty pareto files.
-- No file references old directory names (`hypervolume/`, `igd_plus/`).
-
-### Runtime estimate (full run)
-
-```
-10 instances × 6 solvers × 10 seeds × 3600 s = 600 runs @ 1 hr each
-With 6 workers ≈ 100 hours wall-clock
-```
+**Validated:** `run_smoke.sh` completes end-to-end on 2 instances with exit 0
+and no warnings; output files follow the naming convention; no references to old
+directory names remain; `populations_snapshots/*.mp4` builds correctly.
 
 ---
 
 ## Phase 5 — `irace` Parameter Tuning
 
+**Status:** Not started. **Next phase to implement.**
+
 **Objective:** Set up `irace` workflows for all 6 solvers.
 
-**Depends on:** Phase 4A (solvers correct), Phase 4B (instances wired up).
+**Depends on:** Phase 4A ✅, Phase 4B ✅.
 
 ### Key difference from `motsp_irace`
 
@@ -255,11 +187,10 @@ raw HV exec derives its reference point from `instance.primal_bound`. In
 `--covariance-filename`) and the raw HV exec reads its reference point from a
 file (`--reference-point`). The target runners must:
 
-1. Parse `$4` as an instance name (e.g., `ibov_2015`).
-2. Map it to `instances/${INSTANCE}/train/expected_returns.csv` and
-   `instances/${INSTANCE}/train/covariance_matrix.csv`.
-3. Pass `--reference-point instances/${INSTANCE}/reference_point.txt` to the HV
-   calculator.
+1. Parse `$4` as an instance path (e.g., `../instances/ibov_2015`).
+2. Map it to `${4}/train/expected_returns.csv` and
+   `${4}/train/covariance_matrix.csv`.
+3. Pass `--reference-point ${4}/reference_point.txt` to the HV calculator.
 
 ### Prerequisite: frozen reference points for tuning instances
 
@@ -297,7 +228,7 @@ irace/
 └── irace_runner.sh
 ```
 
-### Instance files (matching `motsp_irace` format)
+### Instance files
 
 **`train-instances.txt`:**
 ```
@@ -335,29 +266,30 @@ testIterationElites = 0
 ```
 
 > [!NOTE]
-> `trainInstancesDir = "../instances"` means irace passes `../instances/ibov_2015`
-> as `$4`. The target runner appends `/train/expected_returns.csv` and
-> `/train/covariance_matrix.csv`.
+> `trainInstancesDir = "../instances"` means irace passes
+> `../instances/ibov_2015` as `$4`. The target runner appends
+> `/train/expected_returns.csv` and `/train/covariance_matrix.csv`.
 
 ### Target runner contract (all solvers)
 
 Each `{solver}-tunner.sh` must:
 1. Parse: `$1`=config_id, `$2`=instance_id, `$3`=seed, `$4`=instance_path.
-2. Derive `ER=${4}/train/expected_returns.csv`,
+2. Set `export LC_NUMERIC=C`.
+3. Derive `ER=${4}/train/expected_returns.csv`,
    `COV=${4}/train/covariance_matrix.csv`,
    `REF=${4}/reference_point.txt`.
-3. Run solver for 60 s with `--pareto` output to tmpdir.
-4. Compute raw HV: `hypervolume_calculator_exec --expected-returns-filename $ER
+4. Run solver for 60 s with `--pareto` output to tmpdir.
+5. For pagmo solvers: `population_size = population_size_factor × 4`.
+6. Compute raw HV: `hypervolume_calculator_exec --expected-returns-filename $ER
    --covariance-filename $COV --reference-point $REF --pareto-0 $PARETO_FILE
    --hypervolume-0 $HV_FILE`.
-5. Print `cost elapsed_time` where `cost = -HV` (negated, since irace
+7. Print `cost elapsed_time` where `cost = -HV` (negated, since irace
    minimizes) or `Inf` on failure.
-6. Clean tmpdir via `trap`.
+8. Clean tmpdir via `trap`.
 
 ### Parameter files
 
-Derive from actual solver CLI flags (verified from `*_solver_exec.cpp` usage
-strings):
+Derive from actual solver CLI flags (verified from `*_solver_exec.cpp`):
 
 | Solver | Parameters |
 |---|---|
@@ -368,37 +300,87 @@ strings):
 | **IHS** | `population_size_factor` i(25,125), `phmcr` r(0.01,0.99), `ppar_min` r(0.01,0.99), `ppar_max` r(0.01,0.99), `bw_min` r(1e-6,1), `bw_max` r(1e-6,1) |
 | **NS-BRKGA** | 6-stage ablation (identical structure to `motsp_irace`) |
 
+### NS-BRKGA staged ablation
+
+Six stages, each unlocking one feature group while fixing the rest. Matches
+`motsp_irace/irace/nsbrkga-parameters-stage{1..6}.txt` exactly in structure:
+
+| Stage | Unlocks | Fixed at |
+|---|---|---|
+| 1 | Core GA params (pop size, elites, mutation, bias, crossover) | 1 pop, no exchange/PR/shake/reset, diversity=NONE |
+| 2 | Dynamic elite sizing + diversity type | Still single pop, no exchange/PR/shake/reset |
+| 3 | Multiple populations + exchange | No PR/shake/reset |
+| 4 | Path relinking (type, dist func, percentage, interval) | No shake/reset |
+| 5 | Shaking (interval, intensity, distribution) | No reset |
+| 6 | Reset (interval, intensity, distribution) — full NS-BRKGA | All unlocked |
+
+Each stage has its own `nsbrkga-parameters-stageN.txt`,
+`nsbrkga-scenario-stageN.txt`, and `nsbrkga-tunner-stageN.sh`. The tunner
+scripts are identical except for the stage number in log/Rdata filenames.
+
+Forbidden parameter combinations (from `motsp_irace`):
+- `min_elites_percentage >= max_elites_percentage`
+- `num_elite_parents > num_total_parents`
+- `num_populations * num_exchange_individuals >= population_size_factor * 4`
+- `num_elite_parents > (population_size_factor * 4) * min_elites_percentage`
+
 ### Tasks
 
 1. Create `irace/train-instances.txt` and `irace/test-instances.txt`.
 2. Create `scripts/build_pilot_reference_points.sh`: runs all 6 solvers ×
-   2 seeds × 60 s on each training instance, then computes the reference front
-   and reference point, writing `instances/${instance}/reference_point.txt`.
-3. Run the pilot to generate frozen reference points.
-4. Create parameter files for each solver.
-5. Create scenario files for each solver.
-6. Create target runner (`*-tunner.sh`) for each solver.
-7. Create NS-BRKGA staged parameter/scenario files (6 stages).
-8. Create `irace/irace_runner.sh` orchestrator.
+   2 seeds × 60 s on each training instance, pools results per instance,
+   computes reference front and reference point using
+   `reference_pareto_front_and_point_calculator_exec`, writes
+   `instances/${instance}/reference_point.txt`.
+3. Run the pilot to generate frozen reference points for `ibov_2011`–`ibov_2017`.
+4. Create parameter files for each of the 5 single-stage solvers.
+5. Create scenario files for each of the 5 single-stage solvers.
+6. Create target runner (`*-tunner.sh`) for each of the 5 single-stage solvers.
+7. Create NS-BRKGA staged parameter files (6 stages).
+8. Create NS-BRKGA staged scenario files (6 stages).
+9. Create NS-BRKGA staged target runners (6 stages).
+10. Create `irace/irace_runner.sh` orchestrator.
 
 ### Acceptance criteria
 
 - Every target runner passes `irace --check`.
 - 10-evaluation smoke test completes for each solver.
-- stdout contains only `cost elapsed_time`.
+- stdout contains only `cost elapsed_time` (no debug output).
 - Holdout instances untouched during tuning.
 - `instances/ibov_{2011..2017}/reference_point.txt` exist and contain exactly
   4 space-separated floats.
+
+### Validation commands
+
+```bash
+# Check a single runner
+cd irace && irace --check --scenario nsga2-scenario.txt
+
+# Smoke: 10 evaluations
+cd irace && irace --scenario nsga2-scenario.txt --maxExperiments 10
+
+# Verify reference points
+for y in $(seq 2011 2017); do
+  wc -w < ../instances/ibov_${y}/reference_point.txt  # expect: 4
+done
+```
+
+### Risks
+
+- Pilot pool may not cover the full attained range → later irace candidates
+  produce fronts outside the reference point. Mitigated by the 5% padding.
+- `irace` R package must be installed (`install.packages("irace")`).
 
 ---
 
 ## Phase 6 — Result Aggregation, Statistics, and Plotting
 
+**Status:** Not started.
+
 **Objective:** Aggregate multi-instance results, compute statistics, generate
 publication-quality plots.
 
-**Depends on:** Phase 4B (run script complete), Phase 5 (tuned parameters used
-in final runs).
+**Depends on:** Phase 4B ✅, Phase 5 (tuned parameters used in final runs).
 
 ### Files to create/modify
 
@@ -440,48 +422,33 @@ Already handled in Phase 4B for the instance loop; this phase adds:
 
 1. Implement `scripts/results_aggregator.py`.
 2. Implement `scripts/metrics_stats.py`.
-3. Wire both into `run.sh` (after the results_aggregator_exec block).
+3. Wire both into `run.sh` (after the `results_aggregator_exec` block).
 4. Add cross-instance aggregate plots to existing plotters.
 
 ### Acceptance criteria
 
-- `metrics.csv` has exactly `10 × 6 × 10 × 2 = 1200` rows (600 HVR + 600 NIGD+).
+- `metrics.csv` has exactly `10 × 6 × 10 × 2 = 1200` rows (600 HVR + 600
+  NIGD+).
 - Missing data detected and reported (non-silent).
 - All plots generate headlessly (`matplotlib.use('Agg')`).
 - `metrics_stats.txt` contains per-instance and aggregate tables.
 
 ---
 
-## Phase 7 — Tests and Documentation
+## Phase 7 — Documentation
 
-**Objective:** Harden tests, complete README, ensure clean-clone
-reproducibility.
+**Status:** Not started.
 
-**Depends on:** Phases 4A, 4B, 5, 6.
+**Objective:** Complete README, ensure clean-clone reproducibility.
+
+**Depends on:** Phases 5, 6.
 
 ### Files to modify/create
 
 #### [MODIFY] [.gitignore](file:///home/luishpmendes/mopop/.gitignore)
 
-Add:
+Add irace outputs:
 ```
-instances/*/train/
-instances/*/oos/
-instances/*/reference_point.txt
-statistics/
-solutions/
-pareto/
-hvr/
-hvr_snapshots/
-nigd_plus/
-nigd_plus_snapshots/
-best_solutions_snapshots/
-num_non_dominated_snapshots/
-num_fronts_snapshots/
-num_elites_snapshots/
-populations_snapshots/
-metrics/
-metrics_snapshots/
 irace/*.Rdata
 irace/*-tuning.log
 irace/*-testing.log
@@ -503,21 +470,18 @@ Sections:
 
 #### Stale file cleanup
 
-- Delete `plotter_num_fronts_snapshots copy.py`.
 - Verify `input/` is only used by tests; if so, document in README.
 
 ### Tasks
 
-1. Update `.gitignore`.
+1. Add irace outputs to `.gitignore`.
 2. Write complete README.
-3. Delete stale files.
-4. Verify clean-clone smoke execution (clone, build, `run_smoke.sh`).
+3. Verify clean-clone smoke execution (clone, build, `run_smoke.sh`).
 
 ### Acceptance criteria
 
 - New user with documented dependencies can run smoke profile from clean clone.
-- `plotter_num_fronts_snapshots copy.py` removed.
-- `.gitignore` covers all generated artifacts.
+- `.gitignore` covers all generated artifacts including irace outputs.
 
 ---
 
@@ -525,20 +489,16 @@ Sections:
 
 ```mermaid
 graph TD
-    P4A["Phase 4A: Fix BUG 5 ✅"] --> P4B["Phase 4B: Multi-Instance Run Script"]
-    P4A --> P5["Phase 5: irace Tuning"]
+    P4A["Phase 4A ✅"] --> P4B["Phase 4B ✅"]
+    P4A --> P5["Phase 5: irace Tuning ⬅ NEXT"]
     P4B --> P5
     P4B --> P6["Phase 6: Aggregation & Plots"]
     P5 --> P6
-    P5 --> P7["Phase 7: Tests & Documentation"]
+    P5 --> P7["Phase 7: Documentation"]
     P6 --> P7
 ```
 
-**Critical path:** 4A → 4B → 5 → 6 → 7.
-
-Phase 5 can start its file-creation tasks (parameter files, scenario files,
-target runners) as soon as 4A is done, but the actual tuning runs require 4B's
-`run_smoke.sh` to have validated the pipeline.
+**Critical path:** 4A ✅ → 4B ✅ → **5** → 6 → 7.
 
 ---
 
@@ -546,9 +506,9 @@ target runners) as soon as 4A is done, but the actual tuning runs require 4B's
 
 | Project | Path | Used for |
 |---|---|---|
-| `motsp_irace` | `/home/luishpmendes/UNICAMP/Doutorado/motsp_irace` | `run.sh`, irace files, `plotter_definitions.py`, `results_aggregator.py`, `metrics_stats.py` |
-| `mopci` | `/home/luishpmendes/UNICAMP/Doutorado/mopci` | Additional plotter patterns if needed |
-| `motmdsp` | `/home/luishpmendes/UNICAMP/Doutorado/motmdsp` | Additional plotter patterns if needed |
+| `motsp_irace` | `/home/luishpmendes/UNICAMP/Doutorado/motsp_irace` | `run.sh`, irace files, `results_aggregator.py`, `metrics_stats.py` |
+| `mopci` | `/home/luishpmendes/UNICAMP/Doutorado/mopci` | Additional plotter patterns |
+| `motmdsp` | `/home/luishpmendes/UNICAMP/Doutorado/motmdsp` | Additional plotter patterns |
 
 ---
 
@@ -557,11 +517,10 @@ target runners) as soon as 4A is done, but the actual tuning runs require 4B's
 | Risk | Impact | Mitigation |
 |---|---|---|
 | BUG 5 fix changes solver convergence | Existing results not reproducible | Expected — old results were wrong |
-| `population_size_factor × 4` too small for seeded individuals | Runtime crash (unsigned underflow in the pagmo solvers, `setInitialPopulations` throw in NS-BRKGA) | Resolved in Phase 4A — `Solver::build_initial_chromosomes` caps the seed count at `population_size`; verified at `--population-size 16` on `ibov_2020` |
+| `population_size_factor × 4` too small for seeded individuals | Runtime crash | Resolved in Phase 4A — cap verified at `--population-size 16` on `ibov_2020` |
 | irace reference point drift | Costs incomparable across candidates | Freeze reference point from pilot pool |
 | Yahoo re-adjusts prices | Cache diverges from fresh download | Cache is committed and pinned; never re-fetch |
 | 100+ hours wall-clock for full run | Long feedback loop | `run_smoke.sh` for quick validation |
-| `results_aggregator_exec` flag mismatch (`--nigd-pluses-statistics` vs `--nigd-plus-statistics`) | Silently drops NIGD+ stats file | Already fixed in Phase 3; verify in 4B |
 
 ---
 
