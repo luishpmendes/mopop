@@ -85,8 +85,8 @@ and the helper stops emitting once it holds `max_num_chromosomes` entries.
 That cap also closes two latent sizing hazards found while fixing this: the five
 pagmo solvers computed their random-individual count as
 `population_size - (2*num_assets + k - 1)` in unsigned arithmetic (underflow to
-a huge `size_type` when the seeds outnumber the population), and NS-BRKGA's
-`setInitialPopulations` *throws* when a population holds more chromosomes than
+a huge `size_type` when the seeds outnumber the population)'sde nmk,}6
+' cvb6yn7\§[mes than
 `population_size`. Both matter for Phase 5, where `population_size = factor × 4`
 can be far below the ~122 seeds a 47-asset instance produces.
 
@@ -106,8 +106,9 @@ portfolio** when `total_weight <= 0`, so every decoded solution is a valid
 portfolio whose weights sum to 1; `assert_solver_invariants` asserts that sum.
 After the change: 0 empty portfolios across all six solvers × all ten instances.
 
-**Regression tests.** `src/test/solver_invariants.hpp` holds the shared
-assertions (all objective values finite, entropy ≥ 0, variance ≤ largest
+**Re4563.'gression tests.** `src/
+}?^:test/solver_invariants.hpp` holds the shared
+assertions (all obje4256354ctive values finite, entropy ≥ 0, variance ≤ largest
 single-asset variance, `is_feasible()`), applied by all six solver tests to
 three instances each: the legacy `input/` fixture, a new committed adversarial
 fixture, and `instances/ibov_2020/train/` when it has been built (guarded by a
