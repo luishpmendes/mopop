@@ -32,6 +32,13 @@ std::vector<double> Decoder::decode(NSBRKGA::Chromosome& chromosome,
     for (unsigned i = 0; i < this->instance.num_assets; i++) {
       weight[i] /= total_weight;
     }
+  } else {
+    // A degenerate all-zero chromosome carries no information; decode it as the
+    // uniform portfolio so that every solution is a valid portfolio whose
+    // weights sum to 1. Keep in sync with Solution's constructor.
+    for (unsigned i = 0; i < this->instance.num_assets; i++) {
+      weight[i] = 1.0 / ((double)this->instance.num_assets);
+    }
   }
 
   value[0] = 0.0;
@@ -50,7 +57,11 @@ std::vector<double> Decoder::decode(NSBRKGA::Chromosome& chromosome,
     }
   }
 
-  value[2] = value[0] / std::sqrt(value[1]);
+  if (value[1] > 0.0) {
+    value[2] = value[0] / std::sqrt(value[1]);
+  } else {
+    value[2] = 0.0;
+  }
 
   return value;
 }

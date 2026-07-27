@@ -100,62 +100,8 @@ void NSBRKGA_Solver::solve() {
                              this->num_threads);
 
   std::vector<std::vector<NSBRKGA::Chromosome>> initial_populations(
-      this->num_populations);
-
-  for (unsigned i = 0; i < this->num_populations; i++) {
-    for (unsigned j = 0; j < this->instance.num_assets; j++) {
-      std::vector<double> x(this->instance.num_assets, 0.0);
-      x[j] = ((double)this->instance.num_assets) /
-             ((double)this->instance.num_assets + 1.0);
-      initial_populations[i].push_back(x);
-    }
-
-    for (unsigned j = 0; j < this->instance.num_assets; j++) {
-      std::vector<double> x(this->instance.num_assets,
-                            1.0 / ((double)this->instance.num_assets + 1.0));
-      x[j] = 0.0;
-      initial_populations[i].push_back(x);
-    }
-
-    {
-      std::vector<double> x(this->instance.num_assets,
-                            1.0 / ((double)this->instance.num_assets));
-      initial_populations[i].push_back(x);
-    }
-
-    std::vector<unsigned> positive_expected_returns_indexes(
-        this->instance.num_assets);
-
-    for (unsigned j = 0; j < this->instance.num_assets; j++) {
-      if (this->instance.expected_returns[j] > 0.0) {
-        positive_expected_returns_indexes.push_back(j);
-      }
-    }
-
-    std::sort(positive_expected_returns_indexes.begin(),
-              positive_expected_returns_indexes.end(),
-              [&](unsigned a, unsigned b) {
-                return this->instance.expected_returns[a] >
-                       this->instance.expected_returns[b];
-              });
-
-    for (unsigned j = 2; j < positive_expected_returns_indexes.size(); j++) {
-      std::vector<double> x(this->instance.num_assets, 0.0);
-      double sum = 0.0;
-
-      for (unsigned k = 0; k < j; k++) {
-        unsigned l = positive_expected_returns_indexes[k];
-        x[l] = this->instance.expected_returns[l];
-        sum += x[l];
-      }
-
-      for (unsigned k = 0; k < this->instance.num_assets; k++) {
-        x[k] /= sum;
-      }
-
-      initial_populations[i].push_back(x);
-    }
-  }
+      this->num_populations,
+      this->build_initial_chromosomes(this->population_size));
 
   algorithm.setInitialPopulations(initial_populations);
   algorithm.initialize();

@@ -268,6 +268,22 @@ class Solver {
   void capture_snapshot(const pagmo::population& pop);
 
   /**
+   * @brief Builds the deterministic seed chromosomes for the initial
+   * population.
+   *
+   * The chromosomes are emitted in the following order: one single-asset
+   * portfolio per asset, one leave-one-out portfolio per asset, the uniform
+   * portfolio and, finally, the portfolios weighted by the expected returns of
+   * the assets with the highest strictly positive expected returns. Every entry
+   * of every chromosome lies in [0, 1].
+   *
+   * @param max_num_chromosomes The maximum number of chromosomes to build.
+   * @return The seed chromosomes, at most max_num_chromosomes of them.
+   */
+  std::vector<std::vector<double>> build_initial_chromosomes(
+      unsigned max_num_chromosomes) const;
+
+  /**
    * @brief Solves the instance.
    */
   virtual void solve() = 0;

@@ -24,21 +24,8 @@ NSPSO_Solver::NSPSO_Solver() = default;
 void NSPSO_Solver::solve() {
   this->start_time = std::chrono::steady_clock::now();
 
-  std::vector<unsigned> positive_expected_returns_indexes(
-      this->instance.num_assets);
-
-  for (unsigned i = 0; i < this->instance.num_assets; i++) {
-    if (this->instance.expected_returns[i] > 0.0) {
-      positive_expected_returns_indexes.push_back(i);
-    }
-  }
-
-  std::sort(positive_expected_returns_indexes.begin(),
-            positive_expected_returns_indexes.end(),
-            [&](unsigned a, unsigned b) {
-              return this->instance.expected_returns[a] >
-                     this->instance.expected_returns[b];
-            });
+  std::vector<std::vector<double>> initial_chromosomes =
+      this->build_initial_chromosomes(this->population_size);
 
   pagmo::problem prob{Problem(this->instance)};
   pagmo::algorithm algo{
@@ -46,45 +33,9 @@ void NSPSO_Solver::solve() {
                    this->leader_selection_range, this->diversity_mechanism,
                    this->memory, this->seed)};
   pagmo::population pop{
-      prob,
-      this->population_size - (2 * this->instance.num_assets +
-                               positive_expected_returns_indexes.size() - 1),
-      this->seed};
+      prob, this->population_size - initial_chromosomes.size(), this->seed};
 
-  for (unsigned i = 0; i < this->instance.num_assets; i++) {
-    std::vector<double> x(this->instance.num_assets, 0.0);
-    x[i] = ((double)this->instance.num_assets) /
-           ((double)this->instance.num_assets + 1.0);
-    pop.push_back(x);
-  }
-
-  for (unsigned i = 0; i < this->instance.num_assets; i++) {
-    std::vector<double> x(this->instance.num_assets,
-                          1.0 / ((double)this->instance.num_assets + 1.0));
-    x[i] = 0.0;
-    pop.push_back(x);
-  }
-
-  {
-    std::vector<double> x(this->instance.num_assets,
-                          1.0 / ((double)this->instance.num_assets));
-    pop.push_back(x);
-  }
-
-  for (unsigned i = 2; i < positive_expected_returns_indexes.size(); i++) {
-    std::vector<double> x(this->instance.num_assets, 0.0);
-    double sum = 0.0;
-
-    for (unsigned j = 0; j < i; j++) {
-      unsigned k = positive_expected_returns_indexes[j];
-      x[k] = this->instance.expected_returns[k];
-      sum += x[k];
-    }
-
-    for (unsigned j = 0; j < this->instance.num_assets; j++) {
-      x[j] /= sum;
-    }
-
+  for (const std::vector<double> &x : initial_chromosomes) {
     pop.push_back(x);
   }
 

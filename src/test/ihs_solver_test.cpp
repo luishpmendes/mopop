@@ -5,6 +5,8 @@
 #include <iostream>
 #include <random>
 
+#include "test/solver_invariants.hpp"
+
 int main() {
   const std::string expected_returns_filename =
                         "input/expected_returns_test.csv",
@@ -33,6 +35,8 @@ int main() {
   assert(fabs(solver.bw_max - 1.0) < std::numeric_limits<double>::epsilon());
 
   solver.solve();
+
+  mopop::assert_solver_invariants(solver);
 
   assert(solver.solving_time > 0);
 
@@ -156,6 +160,47 @@ int main() {
                    std::get<2>(solver.num_fronts_snapshots.back()).end(), 0) /
                    std::get<2>(solver.num_fronts_snapshots.back()).size()
             << ")" << std::endl;
+
+  // BUG 5 regression: an instance whose first asset has a negative expected
+  // return, which is what made the old population initialization emit
+  // chromosome entries outside [0, 1].
+  {
+    mopop::Instance bug5_instance("input/expected_returns_bug5_test.csv",
+                                  "input/covariance_matrix_bug5_test.csv");
+    mopop::IHS_Solver bug5_solver(bug5_instance);
+
+    bug5_solver.set_seed(305089489);
+    bug5_solver.time_limit = 2.0;
+    bug5_solver.max_num_solutions = 128;
+    bug5_solver.population_size = 32;
+    bug5_solver.max_num_snapshots = 16;
+
+    bug5_solver.solve();
+
+    assert(bug5_solver.best_solutions.size() > 0);
+    mopop::assert_solver_invariants(bug5_solver);
+  }
+
+  // The instance that originally exposed BUG 5, when it has been built. Its
+  // seed chromosomes outnumber the population, which exercises the cap in
+  // Solver::build_initial_chromosomes.
+  if (std::ifstream("instances/ibov_2020/train/expected_returns.csv").good()) {
+    mopop::Instance ibov_instance(
+        "instances/ibov_2020/train/expected_returns.csv",
+        "instances/ibov_2020/train/covariance_matrix.csv");
+    mopop::IHS_Solver ibov_solver(ibov_instance);
+
+    ibov_solver.set_seed(305089489);
+    ibov_solver.time_limit = 2.0;
+    ibov_solver.max_num_solutions = 128;
+    ibov_solver.population_size = 32;
+    ibov_solver.max_num_snapshots = 16;
+
+    ibov_solver.solve();
+
+    assert(ibov_solver.best_solutions.size() > 0);
+    mopop::assert_solver_invariants(ibov_solver);
+  }
 
   std::cout << std::endl << "IHS Solver Test PASSED" << std::endl;
 

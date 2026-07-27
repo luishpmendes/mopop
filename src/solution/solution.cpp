@@ -60,7 +60,9 @@ bool Solution::dominates(const std::vector<double>& valueA,
  * - The second value (value[1]) is the weighted sum of the covariances between
  * the assets.
  * - The third value (value[2]) is the ratio of the first value to the square
- * root of the second value.
+ * root of the second value, or 0.0 when the second value is not strictly
+ * positive (which happens only for the degenerate all-zero weight vector, where
+ * the first value is 0.0 as well).
  * - The fourth value (value[3]) is the entropy of the weights.
  *
  * The function assumes that the `weight`, `instance.expected_returns`, and
@@ -85,7 +87,11 @@ void Solution::compute_value() {
     }
   }
 
-  this->value[2] = this->value[0] / std::sqrt(this->value[1]);
+  if (this->value[1] > 0.0) {
+    this->value[2] = this->value[0] / std::sqrt(this->value[1]);
+  } else {
+    this->value[2] = 0.0;
+  }
 }
 
 /**
@@ -93,7 +99,9 @@ void Solution::compute_value() {
  *
  * This constructor initializes the Solution object with the given instance and
  * key. It normalizes the weights based on the key and calculates the expected
- * return and risk.
+ * return and risk. A degenerate key whose entries sum to zero or less carries
+ * no information, and is decoded as the uniform portfolio so that every
+ * solution is a valid portfolio whose weights sum to 1.
  *
  * @param instance Reference to an Instance object containing the problem data.
  * @param key A vector of doubles representing the weights for each asset.
@@ -117,6 +125,10 @@ Solution::Solution(const Instance& instance, const std::vector<double>& key)
   if (total_weight > 0.0) {
     for (unsigned i = 0; i < instance.num_assets; i++) {
       this->weight[i] /= total_weight;
+    }
+  } else {
+    for (unsigned i = 0; i < instance.num_assets; i++) {
+      this->weight[i] = 1.0 / ((double)instance.num_assets);
     }
   }
 

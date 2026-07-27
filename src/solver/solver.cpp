@@ -1,5 +1,7 @@
 #include "solver/solver.hpp"
 
+#include <algorithm>
+
 namespace mopop {
 /**
  * @brief Constructs a new solver.
@@ -246,6 +248,94 @@ void Solver::capture_snapshot(const pagmo::population& pop) {
   this->time_last_snapshot = time_snapshot;
   this->iteration_last_snapshot = this->num_iterations;
   this->num_snapshots++;
+}
+
+/**
+ * @brief Builds the deterministic seed chromosomes for the initial population.
+ *
+ * The chromosomes are emitted in the following order: one single-asset
+ * portfolio per asset, one leave-one-out portfolio per asset, the uniform
+ * portfolio and, finally, the portfolios weighted by the expected returns of
+ * the assets with the highest strictly positive expected returns. Every entry
+ * of every chromosome lies in [0, 1].
+ *
+ * @param max_num_chromosomes The maximum number of chromosomes to build.
+ * @return The seed chromosomes, at most max_num_chromosomes of them.
+ */
+std::vector<std::vector<double>> Solver::build_initial_chromosomes(
+    unsigned max_num_chromosomes) const {
+  std::vector<std::vector<double>> chromosomes;
+
+  if (max_num_chromosomes == 0 || this->instance.num_assets == 0) {
+    return chromosomes;
+  }
+
+  std::vector<unsigned> positive_expected_returns_indexes;
+  positive_expected_returns_indexes.reserve(this->instance.num_assets);
+
+  for (unsigned i = 0; i < this->instance.num_assets; i++) {
+    if (this->instance.expected_returns[i] > 0.0) {
+      positive_expected_returns_indexes.push_back(i);
+    }
+  }
+
+  std::sort(positive_expected_returns_indexes.begin(),
+            positive_expected_returns_indexes.end(),
+            [&](unsigned a, unsigned b) {
+              return this->instance.expected_returns[a] >
+                     this->instance.expected_returns[b];
+            });
+
+  chromosomes.reserve(max_num_chromosomes);
+
+  for (unsigned i = 0; i < this->instance.num_assets &&
+                       chromosomes.size() < max_num_chromosomes;
+       i++) {
+    std::vector<double> x(this->instance.num_assets, 0.0);
+    x[i] = ((double)this->instance.num_assets) /
+           ((double)this->instance.num_assets + 1.0);
+    chromosomes.push_back(x);
+  }
+
+  for (unsigned i = 0; i < this->instance.num_assets &&
+                       chromosomes.size() < max_num_chromosomes;
+       i++) {
+    std::vector<double> x(this->instance.num_assets,
+                          1.0 / ((double)this->instance.num_assets + 1.0));
+    x[i] = 0.0;
+    chromosomes.push_back(x);
+  }
+
+  if (chromosomes.size() < max_num_chromosomes) {
+    std::vector<double> x(this->instance.num_assets,
+                          1.0 / ((double)this->instance.num_assets));
+    chromosomes.push_back(x);
+  }
+
+  for (unsigned i = 2; i < positive_expected_returns_indexes.size() &&
+                       chromosomes.size() < max_num_chromosomes;
+       i++) {
+    std::vector<double> x(this->instance.num_assets, 0.0);
+    double sum = 0.0;
+
+    for (unsigned j = 0; j < i; j++) {
+      unsigned k = positive_expected_returns_indexes[j];
+      x[k] = this->instance.expected_returns[k];
+      sum += x[k];
+    }
+
+    if (sum <= 0.0) {
+      continue;
+    }
+
+    for (unsigned j = 0; j < i; j++) {
+      x[positive_expected_returns_indexes[j]] /= sum;
+    }
+
+    chromosomes.push_back(x);
+  }
+
+  return chromosomes;
 }
 
 /**

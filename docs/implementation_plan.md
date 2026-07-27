@@ -63,88 +63,78 @@ Three metric executables renamed: `hypervolume_ratio_calculator_exec` (HVR),
 `manifest.json`. `cache/prices/` is committed (165 ticker CSVs). This data is
 the sole input to `generate_instances.py build` and must not be re-fetched.
 
----
+### Phase 4A — BUG 5, Population Initialization ✅
 
-## BUG 5 — Population Initialization (⚠️ OPEN, BLOCKS ALL EXPERIMENTS)
+The seeding block added in `6b6aa16` was duplicated across all six
+`*_solver.cpp` files and had two compounding defects: the index vector was
+*sized* to `num_assets` and then `push_back`ed onto (leaving `num_assets`
+phantom entries all pointing at asset 0), and the prefix portfolios divided raw
+expected returns by a running sum that the repeated phantom contributions of
+`expected_returns[0]` could drive negative. Chromosome entries then fell outside
+`[0, 1]`, which normalization cannot repair — measured before the fix on
+`ibov_2020/train` (NS-BRKGA, seed 305089489, 5 s): **67/100 archived solutions
+with negative entropy, 61/100 with variance above the largest single-asset
+variance**, extreme values reaching variance `2.9e8`.
 
-Present in all six `*_solver.cpp` files (commit `6b6aa16`). Two compounding
-defects:
+**Fix.** The block now lives once in `Solver::build_initial_chromosomes(unsigned
+max_num_chromosomes)` (`src/solver/solver.{hpp,cpp}`); all six solvers call it.
+The index vector is built empty with `reserve`, only strictly positive expected
+returns are selected (which makes the normalizing sum positive by construction),
+and the helper stops emitting once it holds `max_num_chromosomes` entries.
 
-1. `std::vector<unsigned> positive_expected_returns_indexes(num_assets)` allocates
-   `num_assets` zeros, then `push_back` appends — phantom entries all point at
-   asset 0.
-2. Raw expected returns used as chromosome weights; negative sums yield entries
-   outside `[0, 1]`.
+That cap also closes two latent sizing hazards found while fixing this: the five
+pagmo solvers computed their random-individual count as
+`population_size - (2*num_assets + k - 1)` in unsigned arithmetic (underflow to
+a huge `size_type` when the seeds outnumber the population), and NS-BRKGA's
+`setInitialPopulations` *throws* when a population holds more chromosomes than
+`population_size`. Both matter for Phase 5, where `population_size = factor × 4`
+can be far below the ~122 seeds a 47-asset instance produces.
 
-**Effect:** Negative Shannon entropy, portfolio variance above single-asset
-maximum. Reproduced on `ibov_2020` (66/100 NS-BRKGA solutions have negative
-entropy). `ibov_2011` is unaffected only because its first asset has positive
-mean.
+`value[2]` (the Sharpe ratio) is now guarded against `0.0 / 0.0` in both
+`src/solution/solution.cpp` and `src/solver/nsbrkga/decoder.cpp`.
 
-**Any experiment run before this is fixed is compromised.**
+**Empty portfolios.** Both decode paths previously skipped normalization when
+the weights summed to zero, leaving an all-zero weight vector. Verification
+found one such empty portfolio in the archive of all ten NS-BRKGA runs (and no
+pagmo run): with zero variance and zero entropy it attains the global minimum of
+both MINIMIZE objectives, so nothing can dominate it and it holds an archive
+slot permanently, biasing the reference front and hypervolume. It is not present
+at `--iterations-limit 0` or `1`, so it is produced during evolution — NS-BRKGA's
+ROULETTE crossover can draw the zero allele from each of the `num_assets`
+single-asset seed chromosomes. Both decode paths now fall back to the **uniform
+portfolio** when `total_weight <= 0`, so every decoded solution is a valid
+portfolio whose weights sum to 1; `assert_solver_invariants` asserts that sum.
+After the change: 0 empty portfolios across all six solvers × all ten instances.
 
----
+**Regression tests.** `src/test/solver_invariants.hpp` holds the shared
+assertions (all objective values finite, entropy ≥ 0, variance ≤ largest
+single-asset variance, `is_feasible()`), applied by all six solver tests to
+three instances each: the legacy `input/` fixture, a new committed adversarial
+fixture, and `instances/ibov_2020/train/` when it has been built (guarded by a
+file-existence check, since `instances/` is gitignored).
 
-## Phase 4A — Fix BUG 5
+`input/{expected_returns,covariance_matrix}_bug5_test.csv` is a 10-asset
+principal submatrix of `ibov_2020/train`, regenerable by that rule: asset 0 is
+the most negative expected return, the next five most negative follow, and the
+four smallest strictly positive returns close the list — which makes the pre-fix
+running sum cross zero at prefix length `p + 1`. Against the pre-fix binary it
+produced 95/100 solutions with negative entropy.
 
-**Objective:** Fix the population initialization across all six solvers so that
-initial chromosomes are well-formed `[0, 1]` vectors and the resulting
-portfolios have non-negative weights summing to 1.
+**Verified.** `make clean && make all` passes all 9 tests. Post-fix
+`ibov_2020/train` acceptance run: 0 negative entropy, 0 variance above maximum,
+0 non-finite (was 67 / 61 / 0). All six solvers × all ten instances, 2 s each:
+60/60 outputs clean. NSGA-II and NS-BRKGA both run normally on `ibov_2020` at
+`--population-size 16`, where the uncapped seed set would have been 122.
 
-### Affected files (6 solvers)
+> [!NOTE]
+> All numeric checking must force `LC_ALL=C`. This machine has
+> `LC_NUMERIC=pt_BR.UTF-8`, under which `awk` parses `0.001511` as `0` — an
+> earlier pass of this verification silently produced vacuous results. The
+> checks above were redone in Python, whose `float()` is locale-independent.
 
-| File | Lines (approx) |
-|---|---|
-| [nsga2_solver.cpp](file:///home/luishpmendes/mopop/src/solver/nsga2/nsga2_solver.cpp) | 27–88 |
-| [nspso_solver.cpp](file:///home/luishpmendes/mopop/src/solver/nspso/nspso_solver.cpp) | 27–89 |
-| [moead_solver.cpp](file:///home/luishpmendes/mopop/src/solver/moead/moead_solver.cpp) | 27–89 |
-| [mhaco_solver.cpp](file:///home/luishpmendes/mopop/src/solver/mhaco/mhaco_solver.cpp) | 27–88 |
-| [ihs_solver.cpp](file:///home/luishpmendes/mopop/src/solver/ihs/ihs_solver.cpp) | 26–87 |
-| [nsbrkga_solver.cpp](file:///home/luishpmendes/mopop/src/solver/nsbrkga/nsbrkga_solver.cpp) | 126–148 |
-
-### Fix specification
-
-1. **Construct index vector empty:** `reserve(num_assets)`, not `(num_assets)`.
-2. **Filter strictly positive expected returns only.**
-3. **Derive chromosome weights from a non-negative quantity** (e.g., the
-   absolute value of expected returns, or uniform weights over the selected
-   subset) so the normalizing sum is strictly positive.
-4. **Guard `value[2]` (Sharpe ratio):** if `value[1] == 0.0`, set
-   `value[2] = 0.0` instead of computing `0.0 / 0.0`.
-5. **Guard population sizing:** if `positive_expected_returns_indexes.size() < 2`,
-   skip the expected-returns-weighted seeding block entirely (fall back to
-   random initialization for those slots).
-
-### Tasks
-
-1. Fix the initialization block in all six `*_solver.cpp` files.
-2. Add the `value[2]` zero-variance guard in `solution.cpp` and
-   `decoder.cpp` (keep them in sync — CLAUDE.md documents this duplication).
-3. Update all six solver tests to run on `ibov_2020/train/` (the instance
-   that triggers the bug) and assert:
-   - All objective values are finite (`std::isfinite`).
-   - Shannon entropy ≥ 0 for every archived solution.
-   - Portfolio variance ≤ max single-asset variance.
-4. Rebuild and run all tests: `make clean && make all`.
-
-### Acceptance criteria
-
-- `make clean && make all` passes (all 9 tests).
-- NS-BRKGA on `ibov_2020/train/` with seed 305089489, 5 s: 0 solutions with
-  negative entropy.
-- No solution in any solver's archive has `NaN` or `Inf` in its objective
-  values.
-- Legacy `input/` fixture tests still pass.
-
-### Dependencies
-
-None (self-contained).
-
-### Risks
-
-- Changing initialization affects solver convergence — existing single-instance
-  results are not reproducible after this change. This is expected and
-  acceptable since those results were wrong.
+Existing single-instance results are not reproducible after this change (the
+seed set and hence the RNG stream both shifted). Expected and accepted — those
+results were computed from broken initialization.
 
 ---
 
@@ -534,7 +524,7 @@ Sections:
 
 ```mermaid
 graph TD
-    P4A["Phase 4A: Fix BUG 5"] --> P4B["Phase 4B: Multi-Instance Run Script"]
+    P4A["Phase 4A: Fix BUG 5 ✅"] --> P4B["Phase 4B: Multi-Instance Run Script"]
     P4A --> P5["Phase 5: irace Tuning"]
     P4B --> P5
     P4B --> P6["Phase 6: Aggregation & Plots"]
@@ -566,7 +556,7 @@ target runners) as soon as 4A is done, but the actual tuning runs require 4B's
 | Risk | Impact | Mitigation |
 |---|---|---|
 | BUG 5 fix changes solver convergence | Existing results not reproducible | Expected — old results were wrong |
-| `population_size_factor × 4` too small for seeded individuals | Runtime crash (pagmo requires `pop_size > 2 × num_assets + seeded_count`) | Add guard: `max(factor × 4, 2 × num_assets + positive_count + 1)` |
+| `population_size_factor × 4` too small for seeded individuals | Runtime crash (unsigned underflow in the pagmo solvers, `setInitialPopulations` throw in NS-BRKGA) | Resolved in Phase 4A — `Solver::build_initial_chromosomes` caps the seed count at `population_size`; verified at `--population-size 16` on `ibov_2020` |
 | irace reference point drift | Costs incomparable across candidates | Freeze reference point from pilot pool |
 | Yahoo re-adjusts prices | Cache diverges from fresh download | Cache is committed and pinned; never re-fetch |
 | 100+ hours wall-clock for full run | Long feedback loop | `run_smoke.sh` for quick validation |
