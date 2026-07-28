@@ -1,0 +1,18 @@
+# NSGA-II Parameters for iRace Tuning
+#
+# Switch names are taken from the usage string at the bottom of
+# src/exec/nsga2_solver_exec.cpp, which is the authoritative flag list.
+#
+# population_size is tuned through a factor because pagmo's NSGA-II requires a
+# population size that is a multiple of four; nsga2-tunner.sh rewrites
+# --population-size-factor <f> into --population-size <f * 4>, giving 100..500.
+#
+# Format: name switch type range [| conditions]
+population_size_factor   "--population-size-factor "   i   (25, 125)
+crossover_probability    "--crossover-probability "    r   (0.01, 0.99)
+crossover_distribution   "--crossover-distribution "   r   (1.00, 99.00)
+mutation_probability     "--mutation-probability "     r   (0.01, 0.99)
+mutation_distribution    "--mutation-distribution "    r   (1.00, 99.00)
+
+[global]
+digits = 2
