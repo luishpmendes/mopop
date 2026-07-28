@@ -82,6 +82,57 @@ Manifest entries carry a `status` of `ok`, `no_data`, or `error`. `build` refuse
 
 **Instances are 28–47 assets, not the 58–73 constituents.** Yahoo serves nothing for delisted, renamed, or merged symbols, so 65 of the 165 unique tickers are unavailable and each instance loses 20–32 names. Every asset present is therefore a survivor, and expected returns are biased upward; each `metadata.json` records this and the per-ticker drop causes. The ≥95%-plus-endpoints coverage rule accounts for at most 2 drops per instance — the rest is upstream availability.
 
+## irace tuning
+
+`irace/` holds one `{solver}-parameters.txt`, `{solver}-scenario.txt` and
+`{solver}-tunner.sh` per solver (NS-BRKGA gets six staged sets). **NSGA-II and NSPSO
+exist; moead, mhaco, ihs and the NS-BRKGA stages are open.** The race trains on
+`train-instances.txt` (`ibov_2011`–`ibov_2017`) and touches
+`test-instances.txt` (`ibov_2018`–`ibov_2020`) only in the post-race testing phase.
+Cost is the *negated* raw hypervolume — `hypervolume_calculator_exec` against the
+frozen `instances/{instance}/reference_point.txt`, which must never be recomputed:
+costs are comparable across configurations only while it stays fixed.
+
+Four things bite when writing a new runner, all learned the hard way:
+
+- **Wrap every exec call in `{ ... > /dev/null 2>&1; } 2>/dev/null`.** An uncaught C++
+  exception kills an exec with SIGABRT and bash announces `Aborted (core dumped)` on
+  the *calling shell's* stderr, which the inner redirect does not cover. irace merges
+  the runner's stdout and stderr, so that one line aborts the entire race with
+  `output of targetRunner should not be more than two numbers`. This fires routinely,
+  because pagmo throws whenever a front point fails to dominate the reference point.
+  A subshell does **not** work — bash exec-optimises it and the main shell reports the
+  death anyway. The brace group preserves `$?`, so exit-status checks still work.
+- **Parameter bounds are dictated by pagmo's constructor validation**, which throws
+  `std::invalid_argument` on violation; the execs do not catch it, so the run aborts
+  and the evaluation is wasted. With `digits = 2` a bound of `0.00` is reachable, so
+  any parameter pagmo requires to be `> 0` must start at `0.01`. Read the real
+  constraints out of the library rather than guessing:
+  `strings /opt/pagmo/lib/libpagmo.so.9 | grep -i <param>`.
+- **Categorical values must be single tokens.** irace emits them unquoted, so pagmo's
+  `"crowding distance"` would word-split into two `argv` entries. The parameter files
+  use `crowding_distance`/`niche_count`/`max_min` and the runner maps them back.
+- **Presence-only flags cannot be tuned as `c(0,1)`.** `--memory` (NSPSO, MHACO) and
+  `--preserve-diversity` (MOEA/D-DE) are read with `arg_parser.option_exists(...)`,
+  which is true for `--memory 0` as well, so such a parameter would silently always
+  mean *on*. They are hardcoded in the runner's invocation to match `run.sh`.
+
+Test artefacts with `[ -s ]`, never `[ -f ]`: an exec given a bad flag prints usage and
+exits 0, and `hypervolume_calculator_exec` opens its output file before computing.
+Validation, from `irace/` with
+`IRACE=~/R/x86_64-pc-linux-gnu-library/4.1/irace/bin/irace`:
+
+```bash
+MOPOP_IRACE_TIME_LIMIT=5 ./nspso-tunner.sh 1 1 12345 ../instances/ibov_2011 ...  # want: "cost elapsed"
+$IRACE --check --scenario nspso-scenario.txt
+# Budget smoke. The minimum is (minSurvival+1) * nbIterations * (mu + eachTest +
+# (nbIterations-1)*max(eachTest,Tnew)), with nbIterations = minSurvival =
+# floor(2 + log2 nParams): 180 for 5 parameters, 300 for 8. --max-time 0 is
+# required, since irace rejects two positive budgets.
+MOPOP_IRACE_TIME_LIMIT=3 $IRACE --scenario nspso-scenario.txt \
+  --max-time 0 --max-experiments 300 --log-file ./smoke-nspso.Rdata
+```
+
 ## In-flight work
 
 `docs/implementation_plan.md` is the active plan: migrate from the single hardcoded instance to ten rolling IBOVESPA windows (`ibov_2011`–`ibov_2020`, tickers already committed under `ibovespa_tickers_2011_2025/`), 10 seeds, irace tuning, and multi-instance aggregation. **Instance generation (old Phase 2), metric bug fixes (old Phase 3), and the BUG 5 initialization fix (Phase 4A) are done.** `scripts/generate_instances.py` and `scripts/validate_instances.py` exist, all ten instances build and validate. The three metric-exec bugs are fixed, execs/flags renamed to `hvr`/`nigd_plus`, raw HV exec for irace exists. `src/test/metrics_test.cpp` pins formulas to analytic values — it duplicates the helpers from the exec files, so keep the two in sync.

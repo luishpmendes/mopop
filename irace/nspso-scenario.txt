@@ -1,0 +1,13 @@
+execDir = "./"
+trainInstancesDir = "../instances"
+trainInstancesFile = "./train-instances.txt"
+targetRunner = "./nspso-tunner.sh"
+# 2400 evaluations at the 60 s per-evaluation limit set by nspso-tunner.sh.
+maxTime = 144000
+parallel = 1
+logFile = "./irace-nspso.Rdata"
+parameterFile = "./nspso-parameters.txt"
+testInstancesDir = "../instances"
+testInstancesFile = "./test-instances.txt"
+testNbElites = 5
+testIterationElites = 0

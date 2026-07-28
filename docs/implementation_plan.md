@@ -326,11 +326,34 @@ Derive from actual solver CLI flags (verified from `*_solver_exec.cpp`):
 | Solver | Parameters |
 |---|---|
 | **NSGA-II** | `population_size_factor` i(25,125), `crossover_probability` r(0.01,0.99), `crossover_distribution` r(1,99), `mutation_probability` r(0.01,0.99), `mutation_distribution` r(1,99) |
-| **NSPSO** | `population_size_factor` i(25,125), `omega` r(0,1), `v_coeff` r(0,1), `chi` r(0,1), `v_max` r(0,1), `u_min` r(0,1), `u_max` r(0,1), `memory` c(0,1) |
+| **NSPSO** | `population_size_factor` i(25,125), `omega` r(0.00,1.00), `c1` r(0.01,4.00), `c2` r(0.01,4.00), `chi` r(0.01,1.20), `v_coeff` r(0.01,1.00), `leader_selection_range` i(1,100), `diversity_mechanism` c(crowding_distance, niche_count, max_min) |
 | **MOEA/D-DE** | `population_size_factor` i(25,125), `weight_generation` c(grid,low_discrepancy,random), `decomposition` c(tchebycheff,weighted,bi), `cr` r(0,1), `f` r(0,2), `neighbours` i(2,50), `preserve_diversity` c(0,1) |
 | **MHACO** | `population_size_factor` i(25,125), `ker` i(2,100), `q` r(0.01,100), `threshold` i(1,100), `n_gen_mark` i(1,100), `focus` r(0,1), `memory` c(0,1) |
 | **IHS** | `population_size_factor` i(25,125), `phmcr` r(0.01,0.99), `ppar_min` r(0.01,0.99), `ppar_max` r(0.01,0.99), `bw_min` r(1e-6,1), `bw_max` r(1e-6,1) |
 | **NS-BRKGA** | 6-stage ablation (identical structure to `motsp_irace`) |
+
+> [!IMPORTANT]
+> **Bounds are dictated by pagmo's constructor validation, not by taste.** A
+> violating configuration throws `std::invalid_argument`, which the solver execs do
+> not catch, so the run aborts and the evaluation is wasted on `Inf`. For NSPSO
+> (strings read out of `libpagmo.so.9`): `omega` ∈ [0,1]; `c1`, `c2`, `chi` must be
+> **> 0**; `v_coeff` ∈ ]0,1]; `leader_selection_range` ∈ ]0,100]. Since `digits = 2`
+> makes `0.00` reachable, every "> 0" parameter starts at `0.01`, never `0.00`.
+> The NSPSO row above was originally wrong — it listed `v_max`, `u_min` and `u_max`,
+> which are not NSPSO flags, and omitted `c1`, `c2`, `leader_selection_range` and
+> `diversity_mechanism`, which are. Verify each remaining solver's row against the
+> usage string in its `*_solver_exec.cpp` before writing its parameter file.
+>
+> Two encoding rules follow from the flag shapes and generalise to the rest:
+> - **Spaced categorical values are encoded as single tokens** and mapped back in the
+>   tunner. iRace emits categorical values unquoted, so `max min` would word-split
+>   into two `argv` entries. Affects `diversity_mechanism` (NSPSO) and MOEA/D-DE's
+>   `weight_generation`/`decomposition` if any value ever gains a space.
+> - **Presence-only flags cannot be tuned as `c(0,1)`.** `--memory` (NSPSO, MHACO)
+>   and `--preserve-diversity` (MOEA/D-DE) are read with
+>   `arg_parser.option_exists(...)`, which is true for `--memory 0` too, so a `c(0,1)`
+>   parameter would silently always mean *on*. They are hardcoded in the runner's
+>   invocation to match `run.sh`.
 
 ### NS-BRKGA staged ablation
 
@@ -368,12 +391,12 @@ Forbidden parameter combinations (from `motsp_irace`):
 3. ✅ Run the pilot to generate frozen reference points. Done for **all ten**
    instances, `ibov_2011`–`ibov_2020` — the holdout three are needed by irace's
    testing phase (see the prerequisite section above).
-4. Create parameter files for each of the 5 single-stage solvers. — ✅ NSGA-II;
-   nspso, moead, mhaco, ihs open.
-5. Create scenario files for each of the 5 single-stage solvers. — ✅ NSGA-II;
-   nspso, moead, mhaco, ihs open.
+4. Create parameter files for each of the 5 single-stage solvers. — ✅ NSGA-II,
+   ✅ NSPSO; moead, mhaco, ihs open.
+5. Create scenario files for each of the 5 single-stage solvers. — ✅ NSGA-II,
+   ✅ NSPSO; moead, mhaco, ihs open.
 6. Create target runner (`*-tunner.sh`) for each of the 5 single-stage solvers. —
-   ✅ NSGA-II; nspso, moead, mhaco, ihs open.
+   ✅ NSGA-II, ✅ NSPSO; moead, mhaco, ihs open.
 7. Create NS-BRKGA staged parameter files (6 stages).
 8. Create NS-BRKGA staged scenario files (6 stages).
 9. Create NS-BRKGA staged target runners (6 stages).
@@ -381,10 +404,20 @@ Forbidden parameter combinations (from `motsp_irace`):
 
 ### Acceptance criteria
 
-- Every target runner passes `irace --check`. — ✅ NSGA-II.
+- Every target runner passes `irace --check`. — ✅ NSGA-II, ✅ NSPSO.
 - Budget smoke test completes for each solver. — ✅ NSGA-II (179 experiments,
-  6 iterations, 4 elites, every training cost finite).
-- stdout contains only `cost elapsed_time` (no debug output). — ✅ NSGA-II.
+  6 iterations, 4 elites, every training cost finite); ✅ NSPSO (290 experiments,
+  6 iterations, 5 elites, every training cost finite, zero `Inf`).
+- stdout contains only `cost elapsed_time` (no debug output). — ✅ NSGA-II,
+  ✅ NSPSO. **This is not free.** The NSPSO smoke first died at 20/300 with
+  `The output of targetRunner should not be more than two numbers!`: an exec killed
+  by SIGABRT makes bash announce `Aborted (core dumped)` on the *calling shell's*
+  stderr, which the exec's own `> /dev/null 2>&1` does not cover, and irace merges
+  the runner's stdout and stderr. Both runners now wrap each exec call in
+  `{ ... > /dev/null 2>&1; } 2>/dev/null`; a subshell does not work, because bash
+  exec-optimises it and the main shell reports the death regardless. The brace group
+  keeps `$?`, so the exit-status guards still fire. NSGA-II had the same latent
+  defect and was fixed alongside — apply this to every remaining runner.
 - Holdout instances untouched during tuning. — ✅ the race draws only from
   `train-instances.txt`; the holdout is read solely in the post-race testing phase.
 - `instances/ibov_{2011..2020}/reference_point.txt` exist and contain exactly
@@ -406,14 +439,22 @@ done
 # The irace launcher is not on PATH; the R package is installed.
 IRACE=~/R/x86_64-pc-linux-gnu-library/4.1/irace/bin/irace
 
-# Target runner standalone — stdout must be exactly "cost elapsed"
+# Target runner standalone — stdout must be exactly "cost elapsed".
+# Redirect with 2>&1 when checking: irace merges the two streams, so a stderr
+# leak is exactly what breaks the contract.
 cd irace
 MOPOP_IRACE_TIME_LIMIT=5 ./nsga2-tunner.sh 1 1 12345 ../instances/ibov_2011 \
   --population-size-factor 25 --crossover-probability 0.95 \
   --crossover-distribution 10 --mutation-probability 0.01 --mutation-distribution 50
 
+MOPOP_IRACE_TIME_LIMIT=5 ./nspso-tunner.sh 1 1 12345 ../instances/ibov_2011 \
+  --population-size-factor 25 --omega 0.60 --c1 2.00 --c2 2.00 --chi 1.00 \
+  --v-coeff 0.50 --leader-selection-range 60 \
+  --diversity-mechanism crowding_distance          # also try niche_count, max_min
+
 # Check a single runner
 $IRACE --check --scenario nsga2-scenario.txt
+$IRACE --check --scenario nspso-scenario.txt
 
 # Budget smoke. 180 is irace's minimum for a 5-parameter scenario, not an
 # arbitrary number: checkMinimumBudget requires
@@ -425,6 +466,12 @@ $IRACE --check --scenario nsga2-scenario.txt
 MOPOP_IRACE_TIME_LIMIT=3 $IRACE --scenario nsga2-scenario.txt \
   --max-time 0 --max-experiments 180 --log-file ./smoke-nsga2.Rdata
 rm -f ./smoke-nsga2.Rdata
+
+# NSPSO has 8 parameters, so nbIterations = minSurvival = floor(2 + log2 8) = 5
+# and the minimum is 6*5*(5+1+4) = 300. Takes ~15 min at 3 s per evaluation.
+MOPOP_IRACE_TIME_LIMIT=3 $IRACE --scenario nspso-scenario.txt \
+  --max-time 0 --max-experiments 300 --log-file ./smoke-nspso.Rdata
+rm -f ./smoke-nspso.Rdata
 ```
 
 ### Risks

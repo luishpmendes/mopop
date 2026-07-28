@@ -5,9 +5,9 @@
 export LC_ALL=C
 export LC_NUMERIC=C
 ###############################################################################
-# NSGA-II Target Runner for iRace
+# NSPSO Target Runner for iRace
 #
-# Usage: ./nsga2-tunner.sh <config_id> <instance_id> <seed> <instance> [params...]
+# Usage: ./nspso-tunner.sh <config_id> <instance_id> <seed> <instance> [params...]
 # Output: cost time
 #
 # The instance argument is a directory (e.g. ../instances/ibov_2015) holding
@@ -30,7 +30,7 @@ PARAMS=("$@")
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Executables.
-SOLVER="${PROJECT_DIR}/bin/exec/nsga2_solver_exec"
+SOLVER="${PROJECT_DIR}/bin/exec/nspso_solver_exec"
 HV_CALC="${PROJECT_DIR}/bin/exec/hypervolume_calculator_exec"
 
 # Time limit per run (seconds). Overridable so that a budget smoke test can run
@@ -61,8 +61,9 @@ trap 'rm -rf "$TMPDIR"' EXIT
 PARETO_FILE="${TMPDIR}/pareto.txt"
 HV_FILE="${TMPDIR}/hv.txt"
 
-# Transform parameters (population_size_factor -> population_size). pagmo's
-# NSGA-II requires a population size that is a multiple of four.
+# Transform parameters (population_size_factor -> population_size). Unlike
+# NSGA-II, pagmo's NSPSO imposes no multiple-of-four requirement; the factor is
+# kept so the tuned range stays 100..500, matching the other pagmo solvers.
 TRANSFORMED_PARAMS=()
 i=0
 while [ $i -lt ${#PARAMS[@]} ]; do
@@ -70,6 +71,20 @@ while [ $i -lt ${#PARAMS[@]} ]; do
         FACTOR="${PARAMS[$((i + 1))]}"
         POPULATION_SIZE=$((FACTOR * 4))
         TRANSFORMED_PARAMS+=("--population-size" "$POPULATION_SIZE")
+        i=$((i + 2))
+    elif [ "${PARAMS[$i]}" = "--diversity-mechanism" ]; then
+        # iRace emits categorical values unquoted, so pagmo's spaced strings
+        # would word-split into two argv entries. nspso-parameters.txt uses
+        # single tokens instead; map them back to what pagmo accepts. This
+        # cannot call fail(): that helper is defined further down, after
+        # $ELAPSED exists, so here it would print a single field.
+        case "${PARAMS[$((i + 1))]}" in
+            crowding_distance) MECHANISM="crowding distance" ;;
+            niche_count) MECHANISM="niche count" ;;
+            max_min) MECHANISM="max min" ;;
+            *) echo "Inf 0"; exit 0 ;;
+        esac
+        TRANSFORMED_PARAMS+=("--diversity-mechanism" "$MECHANISM")
         i=$((i + 2))
     else
         TRANSFORMED_PARAMS+=("${PARAMS[$i]}")
@@ -96,6 +111,7 @@ START_TIME=$(date +%s.%N)
     --seed "$SEED" \
     --time-limit "$TIME_LIMIT" \
     --max-num-solutions "$MAX_NUM_SOLUTIONS" \
+    --memory \
     --pareto "$PARETO_FILE" \
     "${TRANSFORMED_PARAMS[@]}" > /dev/null 2>&1; } 2>/dev/null
 

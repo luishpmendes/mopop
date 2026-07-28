@@ -1,0 +1,46 @@
+# NSPSO Parameters for iRace Tuning
+#
+# Switch names are taken from the usage string at the bottom of
+# src/exec/nspso_solver_exec.cpp, which is the authoritative flag list. The
+# NSPSO row of docs/implementation_plan.md disagreed with it and lost: v_max,
+# u_min and u_max are not NSPSO flags at all, while c1, c2,
+# leader_selection_range and diversity_mechanism are and were missing.
+#
+# population_size is tuned through a factor, but NOT for NSGA-II's reason --
+# pagmo's NSPSO imposes no multiple-of-four requirement. The factor is kept so
+# the tuned range stays 100..500, matching the other pagmo solvers and the
+# MOPOP_MAX_NUM_SOLUTIONS default of run.sh; nspso-tunner.sh rewrites
+# --population-size-factor <f> into --population-size <f * 4>.
+#
+# The lower bounds are not cosmetic. pagmo's nspso constructor throws
+# std::invalid_argument, which nspso_solver_exec does not catch, so a violating
+# configuration aborts the run and burns the evaluation on an Inf cost:
+#   omega                   must be in [0, 1]  -- 0.00 is legal here
+#   c1, c2, chi             must be > 0        -- hence the 0.01 floors
+#   v_coeff                 must be in ]0, 1]  -- 0.00 would throw
+#   leader_selection_range  must be in ]0,100] -- 0 would throw
+# With digits = 2 a bound of 0.00 is reachable, so every "> 0" parameter starts
+# at 0.01 rather than 0.00.
+#
+# diversity_mechanism uses underscore tokens instead of pagmo's spaced strings
+# ("crowding distance", "niche count", "max min") because iRace emits
+# categorical values unquoted -- a spaced value word-splits into two argv
+# entries. nspso-tunner.sh maps each token back to the string pagmo expects.
+#
+# memory is deliberately absent. --memory is a bare presence flag
+# (solver.memory = arg_parser.option_exists("--memory")), so "--memory 0" would
+# still switch it on; it cannot be expressed as c(0, 1). nspso-tunner.sh passes
+# it unconditionally, matching run.sh.
+#
+# Format: name switch type range [| conditions]
+population_size_factor   "--population-size-factor "   i   (25, 125)
+omega                    "--omega "                    r   (0.00, 1.00)
+c1                       "--c1 "                       r   (0.01, 4.00)
+c2                       "--c2 "                       r   (0.01, 4.00)
+chi                      "--chi "                      r   (0.01, 1.20)
+v_coeff                  "--v-coeff "                  r   (0.01, 1.00)
+leader_selection_range   "--leader-selection-range "   i   (1, 100)
+diversity_mechanism      "--diversity-mechanism "      c   (crowding_distance, niche_count, max_min)
+
+[global]
+digits = 2
