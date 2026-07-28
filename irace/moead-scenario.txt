@@ -1,0 +1,13 @@
+execDir = "./"
+trainInstancesDir = "../instances"
+trainInstancesFile = "./train-instances.txt"
+targetRunner = "./moead-tunner.sh"
+# 2400 evaluations at the 60 s per-evaluation limit set by moead-tunner.sh.
+maxTime = 144000
+parallel = 1
+logFile = "./irace-moead.Rdata"
+parameterFile = "./moead-parameters.txt"
+testInstancesDir = "../instances"
+testInstancesFile = "./test-instances.txt"
+testNbElites = 5
+testIterationElites = 0

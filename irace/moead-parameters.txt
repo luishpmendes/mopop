@@ -1,0 +1,62 @@
+# MOEA/D-DE Parameters for iRace Tuning
+#
+# Switch names are taken from the usage string at the bottom of
+# src/exec/moead_solver_exec.cpp, which is the authoritative flag list. The
+# MOEA/D-DE row of docs/implementation_plan.md was a pre-verification sketch and
+# disagreed with it in three places: it bounded f at (0, 2), it offered "grid"
+# as a weight_generation value, and it omitted eta_m, realb and limit, which are
+# real flags. All three are corrected here; see below for the reasons.
+#
+# population_size is tuned through a factor, as for the other pagmo solvers, so
+# the tuned range stays 100..500 -- matching the MOPOP_MAX_NUM_SOLUTIONS default
+# of run.sh. moead-tunner.sh rewrites --population-size-factor <f> into
+# --population-size <f * 4>.
+#
+# The bounds are not cosmetic. pagmo's moead constructor throws
+# std::invalid_argument, which moead_solver_exec does not catch, so a violating
+# configuration aborts the run and burns the evaluation on an Inf cost. Read out
+# of pagmo2/src/algorithms/moead.cpp:53-95:
+#   cr          must be in [0, 1]
+#   f           must be in [0, 1]   -- NOT [0, 2]; the plan's row was wrong
+#   eta_m       must be >= 0        -- the code tests "< 0.", despite its message
+#                                      saying "needs to be positive"
+#   realb       must be in [0, 1]
+#   neighbours  must be >= 2, and at evolve time <= population_size - 1
+# neighbours therefore tops out well below the minimum population size of 100
+# (moead_solver.cpp builds a population of exactly population_size: the random
+# part is sized population_size - initial_chromosomes.size() and the seed
+# chromosomes are then pushed back).
+#
+# "grid" is deliberately absent from weight_generation. For 4 objectives,
+# decomposition_weights (pagmo/utils/multi_objective.hpp:150-170) accepts only
+# population sizes of exactly C(H+3, 3) and throws otherwise. Of the 101 values
+# of population_size_factor in [25, 125], only 30, 55 and 91 clear that bar
+# (populations of 120, 220 and 364), so "grid" would throw for 97% of the range.
+# motsp_irace/irace/moead-parameters.txt excludes it for the same reason.
+#
+# weight_generation uses the underscore token low_discrepancy instead of pagmo's
+# spaced string "low discrepancy" because iRace emits categorical values
+# unquoted -- a spaced value word-splits into two argv entries. moead-tunner.sh
+# maps the token back to the string pagmo expects. decomposition needs no such
+# treatment: tchebycheff, weighted and bi are all single tokens already.
+#
+# preserve_diversity is deliberately absent. --preserve-diversity is a bare
+# presence flag (solver.preserve_diversity =
+# arg_parser.option_exists("--preserve-diversity")), so "--preserve-diversity 0"
+# would still switch it on; it cannot be expressed as c(0, 1). moead-tunner.sh
+# passes it unconditionally, matching run.sh. Note that realb and limit only
+# take effect while it is on, which is what makes them worth tuning here.
+#
+# Format: name switch type range [| conditions]
+population_size_factor   "--population-size-factor "   i   (25, 125)
+weight_generation        "--weight-generation "        c   (low_discrepancy, random)
+decomposition            "--decomposition "            c   (tchebycheff, weighted, bi)
+neighbours               "--neighbours "               i   (2, 50)
+cr                       "--cr "                       r   (0.01, 0.99)
+f                        "--f "                        r   (0.01, 0.99)
+eta_m                    "--eta-m "                    r   (1.00, 99.00)
+realb                    "--realb "                    r   (0.01, 0.99)
+limit                    "--limit "                    i   (1, 20)
+
+[global]
+digits = 2

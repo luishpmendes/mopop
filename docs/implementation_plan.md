@@ -173,8 +173,8 @@ directory names remain; `populations_snapshots/*.mp4` builds correctly.
 
 ## Phase 5 — `irace` Parameter Tuning
 
-**Status:** In progress. Shared infrastructure (tasks 1–3) is done and the NSGA-II
-workflow (tasks 4–6) is done and validated. The other five single-stage solvers and
+**Status:** In progress. Shared infrastructure (tasks 1–3) is done and the NSGA-II,
+NSPSO and MOEA/D-DE workflows (tasks 4–6) are done and validated. MHACO, IHS and
 the NS-BRKGA stages remain.
 
 **Objective:** Set up `irace` workflows for all 6 solvers.
@@ -327,7 +327,7 @@ Derive from actual solver CLI flags (verified from `*_solver_exec.cpp`):
 |---|---|
 | **NSGA-II** | `population_size_factor` i(25,125), `crossover_probability` r(0.01,0.99), `crossover_distribution` r(1,99), `mutation_probability` r(0.01,0.99), `mutation_distribution` r(1,99) |
 | **NSPSO** | `population_size_factor` i(25,125), `omega` r(0.00,1.00), `c1` r(0.01,4.00), `c2` r(0.01,4.00), `chi` r(0.01,1.20), `v_coeff` r(0.01,1.00), `leader_selection_range` i(1,100), `diversity_mechanism` c(crowding_distance, niche_count, max_min) |
-| **MOEA/D-DE** | `population_size_factor` i(25,125), `weight_generation` c(grid,low_discrepancy,random), `decomposition` c(tchebycheff,weighted,bi), `cr` r(0,1), `f` r(0,2), `neighbours` i(2,50), `preserve_diversity` c(0,1) |
+| **MOEA/D-DE** | `population_size_factor` i(25,125), `weight_generation` c(low_discrepancy,random), `decomposition` c(tchebycheff,weighted,bi), `neighbours` i(2,50), `cr` r(0.01,0.99), `f` r(0.01,0.99), `eta_m` r(1.00,99.00), `realb` r(0.01,0.99), `limit` i(1,20) |
 | **MHACO** | `population_size_factor` i(25,125), `ker` i(2,100), `q` r(0.01,100), `threshold` i(1,100), `n_gen_mark` i(1,100), `focus` r(0,1), `memory` c(0,1) |
 | **IHS** | `population_size_factor` i(25,125), `phmcr` r(0.01,0.99), `ppar_min` r(0.01,0.99), `ppar_max` r(0.01,0.99), `bw_min` r(1e-6,1), `bw_max` r(1e-6,1) |
 | **NS-BRKGA** | 6-stage ablation (identical structure to `motsp_irace`) |
@@ -341,14 +341,23 @@ Derive from actual solver CLI flags (verified from `*_solver_exec.cpp`):
 > makes `0.00` reachable, every "> 0" parameter starts at `0.01`, never `0.00`.
 > The NSPSO row above was originally wrong — it listed `v_max`, `u_min` and `u_max`,
 > which are not NSPSO flags, and omitted `c1`, `c2`, `leader_selection_range` and
-> `diversity_mechanism`, which are. Verify each remaining solver's row against the
-> usage string in its `*_solver_exec.cpp` before writing its parameter file.
+> `diversity_mechanism`, which are. The MOEA/D-DE row was wrong in three more ways
+> (all now corrected above, from `pagmo2/src/algorithms/moead.cpp:53-95`): `f` was
+> bounded at (0,2) but pagmo requires **[0,1]**; `eta_m`, `realb` and `limit` were
+> missing though they are real flags; and `grid` was offered as a `weight_generation`
+> value. **`grid` is unusable here.** For 4 objectives `decomposition_weights`
+> (`pagmo/utils/multi_objective.hpp:150-170`) accepts only population sizes of exactly
+> `C(H+3,3)`, and of the 101 values of `population_size_factor` in [25,125] just 30, 55
+> and 91 qualify (120, 220, 364) — it would throw for 97% of the range.
+> Verify each remaining solver's row against the usage string in its
+> `*_solver_exec.cpp` before writing its parameter file.
 >
 > Two encoding rules follow from the flag shapes and generalise to the rest:
 > - **Spaced categorical values are encoded as single tokens** and mapped back in the
 >   tunner. iRace emits categorical values unquoted, so `max min` would word-split
->   into two `argv` entries. Affects `diversity_mechanism` (NSPSO) and MOEA/D-DE's
->   `weight_generation`/`decomposition` if any value ever gains a space.
+>   into two `argv` entries. Affects `diversity_mechanism` (NSPSO) and
+>   `weight_generation` (MOEA/D-DE, `low_discrepancy` → `low discrepancy`). MOEA/D-DE's
+>   `decomposition` needs no mapping — all three of its values are single tokens.
 > - **Presence-only flags cannot be tuned as `c(0,1)`.** `--memory` (NSPSO, MHACO)
 >   and `--preserve-diversity` (MOEA/D-DE) are read with
 >   `arg_parser.option_exists(...)`, which is true for `--memory 0` too, so a `c(0,1)`
@@ -392,11 +401,11 @@ Forbidden parameter combinations (from `motsp_irace`):
    instances, `ibov_2011`–`ibov_2020` — the holdout three are needed by irace's
    testing phase (see the prerequisite section above).
 4. Create parameter files for each of the 5 single-stage solvers. — ✅ NSGA-II,
-   ✅ NSPSO; moead, mhaco, ihs open.
+   ✅ NSPSO, ✅ MOEA/D; mhaco, ihs open.
 5. Create scenario files for each of the 5 single-stage solvers. — ✅ NSGA-II,
-   ✅ NSPSO; moead, mhaco, ihs open.
+   ✅ NSPSO, ✅ MOEA/D; mhaco, ihs open.
 6. Create target runner (`*-tunner.sh`) for each of the 5 single-stage solvers. —
-   ✅ NSGA-II, ✅ NSPSO; moead, mhaco, ihs open.
+   ✅ NSGA-II, ✅ NSPSO, ✅ MOEA/D; mhaco, ihs open.
 7. Create NS-BRKGA staged parameter files (6 stages).
 8. Create NS-BRKGA staged scenario files (6 stages).
 9. Create NS-BRKGA staged target runners (6 stages).
@@ -404,12 +413,17 @@ Forbidden parameter combinations (from `motsp_irace`):
 
 ### Acceptance criteria
 
-- Every target runner passes `irace --check`. — ✅ NSGA-II, ✅ NSPSO.
+- Every target runner passes `irace --check`. — ✅ NSGA-II, ✅ NSPSO, ✅ MOEA/D.
 - Budget smoke test completes for each solver. — ✅ NSGA-II (179 experiments,
   6 iterations, 4 elites, every training cost finite); ✅ NSPSO (290 experiments,
-  6 iterations, 5 elites, every training cost finite, zero `Inf`).
+  6 iterations, 5 elites, every training cost finite, zero `Inf`); ✅ MOEA/D
+  (294 experiments, 8 iterations, 1 elite after post-selection, every training cost
+  finite, zero `Inf`; the post-race testing phase returned 3 finite costs on the
+  holdout). Both MOEA/D categorical parameters were swept standalone beforehand —
+  all 6 `weight_generation` × `decomposition` combinations gave finite costs, and
+  `grid` correctly returned `Inf 0` from the runner's guard.
 - stdout contains only `cost elapsed_time` (no debug output). — ✅ NSGA-II,
-  ✅ NSPSO. **This is not free.** The NSPSO smoke first died at 20/300 with
+  ✅ NSPSO, ✅ MOEA/D. **This is not free.** The NSPSO smoke first died at 20/300 with
   `The output of targetRunner should not be more than two numbers!`: an exec killed
   by SIGABRT makes bash announce `Aborted (core dumped)` on the *calling shell's*
   stderr, which the exec's own `> /dev/null 2>&1` does not cover, and irace merges
@@ -417,7 +431,8 @@ Forbidden parameter combinations (from `motsp_irace`):
   `{ ... > /dev/null 2>&1; } 2>/dev/null`; a subshell does not work, because bash
   exec-optimises it and the main shell reports the death regardless. The brace group
   keeps `$?`, so the exit-status guards still fire. NSGA-II had the same latent
-  defect and was fixed alongside — apply this to every remaining runner.
+  defect and was fixed alongside — apply this to every remaining runner. MOEA/D was
+  written with the fix already in place and never hit the failure.
 - Holdout instances untouched during tuning. — ✅ the race draws only from
   `train-instances.txt`; the holdout is read solely in the post-race testing phase.
 - `instances/ibov_{2011..2020}/reference_point.txt` exist and contain exactly
@@ -452,9 +467,18 @@ MOPOP_IRACE_TIME_LIMIT=5 ./nspso-tunner.sh 1 1 12345 ../instances/ibov_2011 \
   --v-coeff 0.50 --leader-selection-range 60 \
   --diversity-mechanism crowding_distance          # also try niche_count, max_min
 
+# Sweep both categorical parameters: an unmapped token would throw inside pagmo.
+# weight_generation ∈ {low_discrepancy, random} × decomposition ∈
+# {tchebycheff, weighted, bi}. Passing "grid" must return "Inf 0" from the guard.
+MOPOP_IRACE_TIME_LIMIT=5 ./moead-tunner.sh 1 1 12345 ../instances/ibov_2011 \
+  --population-size-factor 25 --weight-generation low_discrepancy \
+  --decomposition tchebycheff --neighbours 20 --cr 0.90 --f 0.50 \
+  --eta-m 20.00 --realb 0.90 --limit 2
+
 # Check a single runner
 $IRACE --check --scenario nsga2-scenario.txt
 $IRACE --check --scenario nspso-scenario.txt
+$IRACE --check --scenario moead-scenario.txt
 
 # Budget smoke. 180 is irace's minimum for a 5-parameter scenario, not an
 # arbitrary number: checkMinimumBudget requires
@@ -472,6 +496,12 @@ rm -f ./smoke-nsga2.Rdata
 MOPOP_IRACE_TIME_LIMIT=3 $IRACE --scenario nspso-scenario.txt \
   --max-time 0 --max-experiments 300 --log-file ./smoke-nspso.Rdata
 rm -f ./smoke-nspso.Rdata
+
+# MOEA/D has 9 parameters. floor(2 + log2 9) = 5 as well, so the minimum is the
+# same 300 — the next step up would need 16 parameters.
+MOPOP_IRACE_TIME_LIMIT=3 $IRACE --scenario moead-scenario.txt \
+  --max-time 0 --max-experiments 300 --log-file ./smoke-moead.Rdata
+rm -f ./smoke-moead.Rdata
 ```
 
 ### Risks
