@@ -174,7 +174,7 @@ directory names remain; `populations_snapshots/*.mp4` builds correctly.
 ## Phase 5 — `irace` Parameter Tuning
 
 **Status:** In progress. Shared infrastructure (tasks 1–3) is done and the NSGA-II,
-NSPSO and MOEA/D-DE workflows (tasks 4–6) are done and validated. MHACO, IHS and
+NSPSO, MOEA/D-DE and MHACO workflows (tasks 4–6) are done and validated. IHS and
 the NS-BRKGA stages remain.
 
 **Objective:** Set up `irace` workflows for all 6 solvers.
@@ -328,7 +328,7 @@ Derive from actual solver CLI flags (verified from `*_solver_exec.cpp`):
 | **NSGA-II** | `population_size_factor` i(25,125), `crossover_probability` r(0.01,0.99), `crossover_distribution` r(1,99), `mutation_probability` r(0.01,0.99), `mutation_distribution` r(1,99) |
 | **NSPSO** | `population_size_factor` i(25,125), `omega` r(0.00,1.00), `c1` r(0.01,4.00), `c2` r(0.01,4.00), `chi` r(0.01,1.20), `v_coeff` r(0.01,1.00), `leader_selection_range` i(1,100), `diversity_mechanism` c(crowding_distance, niche_count, max_min) |
 | **MOEA/D-DE** | `population_size_factor` i(25,125), `weight_generation` c(low_discrepancy,random), `decomposition` c(tchebycheff,weighted,bi), `neighbours` i(2,50), `cr` r(0.01,0.99), `f` r(0.01,0.99), `eta_m` r(1.00,99.00), `realb` r(0.01,0.99), `limit` i(1,20) |
-| **MHACO** | `population_size_factor` i(25,125), `ker` i(2,100), `q` r(0.01,100), `threshold` i(1,100), `n_gen_mark` i(1,100), `focus` r(0,1), `memory` c(0,1) |
+| **MHACO** | `population_size_factor` i(25,125), `ker` i(2,100), `q` r(0.01,2.00), `threshold` i(1,100), `n_gen_mark` i(1,100), `focus` r(0.00,10.00) |
 | **IHS** | `population_size_factor` i(25,125), `phmcr` r(0.01,0.99), `ppar_min` r(0.01,0.99), `ppar_max` r(0.01,0.99), `bw_min` r(1e-6,1), `bw_max` r(1e-6,1) |
 | **NS-BRKGA** | 6-stage ablation (identical structure to `motsp_irace`) |
 
@@ -349,8 +349,28 @@ Derive from actual solver CLI flags (verified from `*_solver_exec.cpp`):
 > (`pagmo/utils/multi_objective.hpp:150-170`) accepts only population sizes of exactly
 > `C(H+3,3)`, and of the 101 values of `population_size_factor` in [25,125] just 30, 55
 > and 91 qualify (120, 220, 364) — it would throw for 97% of the range.
+> The MHACO row was wrong in two more ways, both now corrected above:
+> it offered `memory` as `c(0,1)`, which the presence-only rule below forbids, and it
+> bounded `focus` at (0,1), a range in which the parameter is **provably inert**.
+> `src/solver/mhaco/problem.cpp` gives every variable the bounds [0,1], so
+> `(ub[h]-lb[h])/focus` is exactly `1/focus` and the trigger at `maco.cpp:668`,
+> `(d_max-d_min)/m_counter > 1/focus`, has a left-hand side that can never exceed 1 —
+> so `focus ≤ 1` never fires. `motsp_irace`'s (0.00,10.00) is the correct bound.
 > Verify each remaining solver's row against the usage string in its
 > `*_solver_exec.cpp` before writing its parameter file.
+>
+> **MHACO's `threshold` range is legal only because its runner hardcodes `--memory`.**
+> `mhaco_solver.cpp:31` builds `pagmo::maco` with `gen = 1`, and the constructor
+> requires `threshold ∈ [1, gen]` while memory is *inactive* (`maco.cpp:76-79`) —
+> i.e. exactly 1. Memory flips the constraint to `threshold ≥ 1` (`maco.cpp:80-84`),
+> which is what opens up (1,100). Verified directly: `--threshold 5` aborts with exit
+> 134, `--threshold 5 --memory` exits 0. This is the first case where a hardcoded
+> presence flag is not merely a `run.sh` mirror but a precondition for another
+> parameter's bounds — check for the same coupling in IHS and NS-BRKGA.
+> `ker` carries a second cross-parameter constraint, `ker ≤ population_size` at evolve
+> time (`maco.cpp:139-142`); the 100 floor on `population_size` covers the whole
+> tuned range, and `ker = 100` at `population_size = 100` was smoke-tested at the
+> boundary.
 >
 > Two encoding rules follow from the flag shapes and generalise to the rest:
 > - **Spaced categorical values are encoded as single tokens** and mapped back in the
@@ -401,11 +421,11 @@ Forbidden parameter combinations (from `motsp_irace`):
    instances, `ibov_2011`–`ibov_2020` — the holdout three are needed by irace's
    testing phase (see the prerequisite section above).
 4. Create parameter files for each of the 5 single-stage solvers. — ✅ NSGA-II,
-   ✅ NSPSO, ✅ MOEA/D; mhaco, ihs open.
+   ✅ NSPSO, ✅ MOEA/D, ✅ MHACO; ihs open.
 5. Create scenario files for each of the 5 single-stage solvers. — ✅ NSGA-II,
-   ✅ NSPSO, ✅ MOEA/D; mhaco, ihs open.
+   ✅ NSPSO, ✅ MOEA/D, ✅ MHACO; ihs open.
 6. Create target runner (`*-tunner.sh`) for each of the 5 single-stage solvers. —
-   ✅ NSGA-II, ✅ NSPSO, ✅ MOEA/D; mhaco, ihs open.
+   ✅ NSGA-II, ✅ NSPSO, ✅ MOEA/D, ✅ MHACO; ihs open.
 7. Create NS-BRKGA staged parameter files (6 stages).
 8. Create NS-BRKGA staged scenario files (6 stages).
 9. Create NS-BRKGA staged target runners (6 stages).
@@ -413,7 +433,8 @@ Forbidden parameter combinations (from `motsp_irace`):
 
 ### Acceptance criteria
 
-- Every target runner passes `irace --check`. — ✅ NSGA-II, ✅ NSPSO, ✅ MOEA/D.
+- Every target runner passes `irace --check`. — ✅ NSGA-II, ✅ NSPSO, ✅ MOEA/D,
+  ✅ MHACO.
 - Budget smoke test completes for each solver. — ✅ NSGA-II (179 experiments,
   6 iterations, 4 elites, every training cost finite); ✅ NSPSO (290 experiments,
   6 iterations, 5 elites, every training cost finite, zero `Inf`); ✅ MOEA/D
@@ -422,6 +443,11 @@ Forbidden parameter combinations (from `motsp_irace`):
   holdout). Both MOEA/D categorical parameters were swept standalone beforehand —
   all 6 `weight_generation` × `decomposition` combinations gave finite costs, and
   `grid` correctly returned `Inf 0` from the runner's guard.
+  ✅ MHACO (295 experiments, 4 iterations, 4 elites, 908 s wall clock) — but it is
+  the **first solver whose smoke was not zero-`Inf`**: 4 of 300 training evaluations
+  (1.33%, configurations 6, 9, 30, 32) and 1 of 12 testing evaluations returned `Inf`.
+  This is an artifact of the smoke's reduced time limit, not of the parameter bounds,
+  and the distinction was checked rather than assumed — see the note below.
 - stdout contains only `cost elapsed_time` (no debug output). — ✅ NSGA-II,
   ✅ NSPSO, ✅ MOEA/D. **This is not free.** The NSPSO smoke first died at 20/300 with
   `The output of targetRunner should not be more than two numbers!`: an exec killed
@@ -432,11 +458,48 @@ Forbidden parameter combinations (from `motsp_irace`):
   exec-optimises it and the main shell reports the death regardless. The brace group
   keeps `$?`, so the exit-status guards still fire. NSGA-II had the same latent
   defect and was fixed alongside — apply this to every remaining runner. MOEA/D was
-  written with the fix already in place and never hit the failure.
+  written with the fix already in place and never hit the failure. — ✅ MHACO, also
+  written with the fix in place; its 5 `Inf` evaluations each involved a SIGABRT that
+  the brace group swallowed, so the race ran to completion instead of dying the way
+  NSPSO's first attempt did.
 - Holdout instances untouched during tuning. — ✅ the race draws only from
   `train-instances.txt`; the holdout is read solely in the post-race testing phase.
 - `instances/ibov_{2011..2020}/reference_point.txt` exist and contain exactly
   4 space-separated floats. — ✅ all ten.
+
+> [!NOTE]
+> **A budget smoke run at `MOPOP_IRACE_TIME_LIMIT=3` can produce `Inf` costs that the
+> real 60 s tuning run will not.** The frozen reference points were built from a 60 s
+> pilot pool, so they bound the region a *converged* archive occupies. A 3 s run is
+> far less converged and can retain points outside that region; `compute_hypervolume`
+> (`hypervolume_calculator_exec.cpp:20-50`) hands the front to pagmo unfiltered, and
+> pagmo throws as soon as one point fails to dominate the reference point. The runner
+> turns that into `Inf`, exactly as designed.
+>
+> All five MHACO `Inf`s were reproduced and then resolved by re-running the identical
+> configuration and seed at the 60 s default:
+>
+> | config | instance | 3 s | 60 s |
+> |---|---|---|---|
+> | 6 | ibov_2014 | `Inf` | `-1.38379e-07` |
+> | 9 | ibov_2012 | `Inf` | `-1.79656e-07` |
+> | 30 | ibov_2014 | `Inf` | `-1.49993e-07` |
+> | 32 | ibov_2014 | `Inf` | `-1.49773e-07` |
+> | 22 (testing) | ibov_2018 | `Inf` | `-7.22982e-08` |
+>
+> The violated coordinate in the reproduced case was objective 2 (the ratio, MAXIMIZE):
+> the front held a point at `0.00154696` against a reference of `0.0017306`. Three of
+> the four training failures were on `ibov_2014`, which is the most fragile instance —
+> the entropy coordinate of its reference point (5.2332) sits only 0.0148 below the
+> maximum attainable `log2(38) = 5.2479`, versus a headroom of 0.77–0.84 on `ibov_2011`,
+> `ibov_2012` and `ibov_2020`. (`ibov_2015`–`ibov_2017` have *negative* entropy headroom
+> and so can never be violated on that coordinate.)
+>
+> **Consequence for the remaining smokes (IHS, NS-BRKGA):** treat a low single-digit
+> `Inf` percentage at 3 s as expected. Before blaming the parameter bounds, re-run the
+> rejected configuration and seed at the 60 s default — irace prints the rejected IDs
+> (`Immediately rejected configurations: …` lists **IDs**, not a count) and
+> `iraceResults$allConfigurations` in the `.Rdata` gives their parameter values.
 
 ### Validation commands
 

@@ -1,0 +1,79 @@
+# MHACO Parameters for iRace Tuning
+#
+# Switch names are taken from the usage string at the bottom of
+# src/exec/mhaco_solver_exec.cpp, which is the authoritative flag list. The
+# MHACO row of docs/implementation_plan.md was a pre-verification sketch and
+# disagreed with it in two places: it offered memory as c(0, 1) and it bounded
+# focus at (0, 1). Both are corrected here; see below for the reasons.
+#
+# population_size is tuned through a factor, as for the other pagmo solvers, so
+# the tuned range stays 100..500 -- matching the MOPOP_MAX_NUM_SOLUTIONS default
+# of run.sh. mhaco-tunner.sh rewrites --population-size-factor <f> into
+# --population-size <f * 4>.
+#
+# The bounds are not cosmetic. pagmo's maco constructor throws
+# std::invalid_argument, which mhaco_solver_exec does not catch, so a violating
+# configuration aborts the run and burns the evaluation on an Inf cost. Note
+# that mhaco_solver.cpp:31 constructs pagmo::maco with gen = 1 -- the solver
+# drives its own outer loop, calling evolve() once per generation. That gen = 1
+# is what makes the threshold bound below load-bearing. Read out of
+# pagmo2/src/algorithms/maco.cpp:
+#   focus       must be >= 0                              (maco.cpp:72-75)
+#   threshold   must be in [1, gen] when memory is off    (maco.cpp:76-79)
+#               must be >= 1        when memory is on     (maco.cpp:80-84)
+#   ker         must be <= population_size, checked at evolve time
+#                                                         (maco.cpp:139-142)
+#
+# threshold is the parameter to be careful with. Since gen is 1, "in [1, gen]"
+# collapses to "exactly 1", so with memory inactive every value above 1 throws.
+# The range (1, 100) below is legal only because mhaco-tunner.sh passes --memory
+# unconditionally. Verified directly:
+#   --threshold 5             -> Aborted (core dumped), exit 134
+#   --threshold 5 --memory    -> exit 0
+# If --memory is ever dropped from the runner, this range must drop to a
+# constant 1 at the same time.
+#
+# ker gets no constructor validation -- the "The ker size parameter must be >=2"
+# string in libpagmo.so.9 belongs to gaco, not maco -- but evolve() throws when
+# ker exceeds the population size. Since population_size is at least 100 and ker
+# tops out at 100, the whole grid is safe. The floor of 2 is kept from
+# motsp_irace: the omega weights are a distribution over the archive, so a
+# single-entry archive is degenerate.
+#
+# q and n_gen_mark are likewise unvalidated by pagmo, but both are divisors and
+# so cannot be zero: q in the omega weights
+# 1/(q*ker*sqrt(2*pi)) * exp(-(l-1)^2 / (2*q^2*ker^2)) (maco.cpp:600-601,
+# 623-624), and n_gen_mark in the standard deviations (maco.cpp:674-678). With
+# digits = 2 a bound of 0.00 is reachable, so q starts at 0.01. Past roughly 2
+# the Gaussian is already flat across the archive, which fixes the upper bound.
+#
+# focus is bounded at (0.00, 10.00), not the plan's (0.00, 1.00), because
+# anything at or below 1 is inert on this problem. src/solver/mhaco/problem.cpp
+# gives every variable the bounds [0, 1], so (ub[h] - lb[h]) / focus is exactly
+# 1 / focus, and the trigger at maco.cpp:668 is
+# (d_max - d_min) / m_counter > 1 / focus. Its left-hand side can never exceed 1
+# because d_max and d_min both live inside [0, 1], so focus <= 1 never fires.
+# 0.00 is kept as the explicit "disabled" value (maco.cpp:665-669 guards on
+# m_focus != 0.), which is also the solver default.
+#
+# memory is deliberately absent, despite the plan's row offering c(0, 1).
+# --memory is a bare presence flag (solver.memory =
+# arg_parser.option_exists("--memory")), so "--memory 0" would still switch it
+# on; it cannot be expressed as a categorical. mhaco-tunner.sh passes it
+# unconditionally, matching run.sh.
+#
+# eval_stop is deliberately absent too. It counts evolve() calls without an
+# improvement and stops early, which is meaningful only for a multi-generation
+# evolve; with gen = 1 the solver's own outer loop owns termination. It stays at
+# its default of 0 (disabled), as in motsp_irace.
+#
+# Format: name switch type range [| conditions]
+population_size_factor   "--population-size-factor "   i   (25, 125)
+ker                      "--ker "                      i   (2, 100)
+q                        "--q "                        r   (0.01, 2.00)
+threshold                "--threshold "                i   (1, 100)
+n_gen_mark               "--n-gen-mark "               i   (1, 100)
+focus                    "--focus "                    r   (0.00, 10.00)
+
+[global]
+digits = 2
